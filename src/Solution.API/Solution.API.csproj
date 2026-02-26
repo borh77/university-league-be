@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BuildingBlocks\Solution.BuildingBlocks.Core\Solution.BuildingBlocks.Core.csproj" />
+    <ProjectReference Include="..\BuildingBlocks\Solution.BuildingBlocks.Infrastructure\Solution.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\UniLeague\Solution.UniLeague.API\Solution.UniLeague.API.csproj" />
+    <ProjectReference Include="..\Modules\UniLeague\Solution.UniLeague.Infrastructure\Solution.UniLeague.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Solution.BuildingBlocks.Infrastructure\Solution.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\Solution.Blog.Core\Solution.Blog.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Database\Repositories\" />
+  </ItemGroup>
+
+</Project>
