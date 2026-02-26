@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Restore dependencies
-        run: dotnet restore ./src/Explorer.sln
+        run: dotnet restore ./src/Solution.sln
 
       - name: Build solution
-        run: dotnet build ./src/Explorer.sln --no-incremental --configuration Release
+        run: dotnet build ./src/Solution.sln --no-incremental --configuration Release
