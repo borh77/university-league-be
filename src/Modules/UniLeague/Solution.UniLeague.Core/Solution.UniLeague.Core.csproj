@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Solution.UniLeague.API\Solution.UniLeague.API.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Solution.BuildingBlocks.Core\Solution.BuildingBlocks.Core.csproj" />
+  </ItemGroup>
+
+</Project>
