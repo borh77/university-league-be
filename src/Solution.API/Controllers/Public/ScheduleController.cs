@@ -6,7 +6,7 @@ using Solution.UniLeague.API.Public;
 namespace Solution.API.Controllers.Public;
 
 [AllowAnonymous]
-[Route("api/public/leagues/{leagueId:long}/schedule")]
+[Route("api/public/leagues/{leagueId:long}")]
 [ApiController]
 public class ScheduleController : ControllerBase
 {
@@ -17,9 +17,15 @@ public class ScheduleController : ControllerBase
         _leaguePublicService = leaguePublicService;
     }
 
-    [HttpGet]
+    [HttpGet("schedule")]
     public ActionResult<List<MatchDto>> GetSchedule(long leagueId)
     {
         return Ok(_leaguePublicService.GetScheduleByLeague(leagueId));
+    }
+
+    [HttpGet("results")]
+    public ActionResult<List<MatchDto>> GetResults(long leagueId)
+    {
+        return Ok(_leaguePublicService.GetResultsByLeague(leagueId));
     }
 }

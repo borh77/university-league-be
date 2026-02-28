@@ -182,4 +182,45 @@ public class MatchTests
         match.HomeTeamName.ShouldBe("Crvena zvezda");
         match.AwayTeamName.ShouldBe("Crvena zvezda");
     }
+
+    [Fact]
+    public void Has_no_result_by_default()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now);
+
+        match.HasResult.ShouldBeFalse();
+        match.Result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Sets_result_successfully()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now);
+
+        match.SetResult(MatchResult.Create(2, 1));
+
+        match.HasResult.ShouldBeTrue();
+        match.Result!.HomeScore.ShouldBe(2);
+        match.Result.AwayScore.ShouldBe(1);
+    }
+
+    [Fact]
+    public void SetResult_rejects_null()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now);
+
+        Should.Throw<ArgumentNullException>(() => match.SetResult(null!));
+    }
 }

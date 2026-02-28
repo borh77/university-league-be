@@ -21,4 +21,10 @@ public class LeagueService : ILeagueService
         var matches = _matchRepository.GetScheduleByLeague(leagueId);
         return matches.Results.Select(m => _mapper.Map<MatchDto>(m)).ToList();
     }
+
+    public List<MatchDto> GetResultsByLeague(long leagueId)
+    {
+        var matches = _matchRepository.GetResultsByLeague(leagueId);
+        return matches.Results.Select(_mapper.Map<MatchDto>).ToList();
+    }
 }

@@ -13,6 +13,7 @@ public class Match : Entity
     public string AwayTeamName { get; init; }
     public string AwayTeamLogoUrl { get; init; }
     public DateTime ScheduledAt { get; init; }
+    public MatchResult? Result { get; private set; }
 
     // Parameterless constructor for EF Core
     private Match() { }
@@ -40,4 +41,11 @@ public class Match : Entity
         AwayTeamLogoUrl = awayTeamLogoUrl;
         ScheduledAt = scheduledAt;
     }
+
+    public void SetResult(MatchResult result)
+    {
+        Result = result ?? throw new ArgumentNullException(nameof(result));
+    }
+
+    public bool HasResult => Result is not null;
 }

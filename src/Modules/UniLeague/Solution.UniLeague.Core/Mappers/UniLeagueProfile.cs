@@ -9,7 +9,11 @@ namespace Solution.UniLeague.Core.Mappers;
 /// </summary>
 public class UniLeagueProfile : Profile
 {
-    public UniLeagueProfile() {
-        CreateMap<Match, MatchDto>().ReverseMap();
+    public UniLeagueProfile()
+    {
+        CreateMap<Match, MatchDto>()
+            .ForMember(dest => dest.Result,
+                opt => opt.MapFrom(src => src.Result != null ? src.Result.ToString() : null))
+            .ReverseMap();
     }
 }

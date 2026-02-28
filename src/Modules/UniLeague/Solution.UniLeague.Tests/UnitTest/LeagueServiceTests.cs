@@ -174,4 +174,77 @@ public class LeagueServiceTests
 
         return match;
     }
+
+    [Fact]
+    public void GetResults_returns_only_matches_with_result()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var matchWithResult = CreateMatch(1, leagueId, 1, "Crvena zvezda", "Partizan");
+        matchWithResult.SetResult(MatchResult.Create(2, 1));
+
+        var matchWithoutResult = CreateMatch(2, leagueId, 2, "Vojvodina", "Čukarički");
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(
+                new List<Solution.UniLeague.Core.Domain.Match> { matchWithResult }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Count.ShouldBe(1);
+        result.All(m => m.Result != null).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void GetResults_maps_result_to_correct_format()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Crvena zvezda", "Partizan");
+        match.SetResult(MatchResult.Create(3, 0));
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(
+                new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        result[0].Result.ShouldBe("3:0");
+    }
+
+    [Fact]
+    public void GetResults_returns_empty_list_when_no_results()
+    {
+        // Arrange
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(It.IsAny<long>()))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(
+                new List<Solution.UniLeague.Core.Domain.Match>(), 0));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(999L);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Count.ShouldBe(0);
+    }
 }

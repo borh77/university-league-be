@@ -12,4 +12,5 @@ public class MatchDto
     public string AwayTeamName { get; set; }
     public string AwayTeamLogoUrl { get; set; }
     public DateTime ScheduledAt { get; set; }
+    public string? Result { get; set; }
 }

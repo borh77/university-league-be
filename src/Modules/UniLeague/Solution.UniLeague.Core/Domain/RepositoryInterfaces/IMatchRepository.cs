@@ -12,4 +12,5 @@ namespace Solution.UniLeague.Core.Domain.RepositoryInterfaces;
 public interface IMatchRepository
 {
     public PagedResult<Match> GetScheduleByLeague(long leagueId);
+    public PagedResult<Match> GetResultsByLeague(long leagueId);
 }
