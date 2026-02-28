@@ -1,0 +1,1 @@
+DELETE FROM uni_league."Matches";

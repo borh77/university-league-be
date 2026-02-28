@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Solution.UniLeague.Core.Domain;
 
 namespace Solution.UniLeague.Infrastructure.Database;
 
@@ -9,6 +10,7 @@ namespace Solution.UniLeague.Infrastructure.Database;
 public class UniLeagueContext : DbContext
 {
     public UniLeagueContext(DbContextOptions<UniLeagueContext> options) : base(options) { }
+    public DbSet<Match> Matches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
