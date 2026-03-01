@@ -28,6 +28,7 @@ public static class UniLeagueStartup
     {
         services.AddScoped<IHealthService, HealthService>();
         services.AddScoped<ILeagueService, LeagueService>();
+        services.AddScoped<ITeamService, TeamService>();
 
     }
 
@@ -35,6 +36,7 @@ public static class UniLeagueStartup
     {
         
         services.AddScoped<IMatchRepository, MatchDbRepository>();
+        services.AddScoped<ITeamRepository, TeamDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(
             DbConnectionStringBuilder.Build("uni_league")); //might change later

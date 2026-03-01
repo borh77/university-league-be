@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -29,10 +29,6 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Solution.BuildingBlocks.Tests\Solution.BuildingBlocks.Tests.csproj" />
     <ProjectReference Include="..\Solution.UniLeague.API\Solution.UniLeague.API.csproj" />
     <ProjectReference Include="..\Solution.UniLeague.Infrastructure\Solution.UniLeague.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="TestData\" />
   </ItemGroup>
 
 </Project>

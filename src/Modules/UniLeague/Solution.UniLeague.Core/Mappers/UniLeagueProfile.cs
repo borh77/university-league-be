@@ -15,5 +15,8 @@ public class UniLeagueProfile : Profile
             .ForMember(dest => dest.Result,
                 opt => opt.MapFrom(src => src.Result != null ? src.Result.ToString() : null))
             .ReverseMap();
+
+        CreateMap<Player, PlayerDto>().ReverseMap();
+        CreateMap<Team, TeamProfileDto>().ReverseMap();
     }
 }
