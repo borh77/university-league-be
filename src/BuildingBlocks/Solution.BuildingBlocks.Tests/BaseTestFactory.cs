@@ -20,7 +20,10 @@ public abstract class BaseTestFactory<TDbContext> : WebApplicationFactory<Progra
             var db = scopedServices.GetRequiredService<TDbContext>();
             var logger = scopedServices.GetRequiredService<ILogger<BaseTestFactory<TDbContext>>>();
 
-            var path = Path.Combine(".", "..", "..", "..", "TestData");
+            var path = Path.GetFullPath(Path.Combine(
+                AppContext.BaseDirectory,
+                "../../../../../../Modules/UniLeague/Solution.UniLeague.Tests/TestData"
+            ));
             InitializeDatabase(db, path, logger);
         });
     }
@@ -33,21 +36,37 @@ public abstract class BaseTestFactory<TDbContext> : WebApplicationFactory<Progra
             var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
             databaseCreator.CreateTables();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // CreateTables throws an exception if the schema already exists. This is a workaround for multiple dbcontexts.
+            
         }
 
         try
         {
-            var scriptFiles = Directory.GetFiles(scriptFolder);
+            logger.LogInformation("Seeding scripts folder: {Folder}", scriptFolder);
+
+            var scriptFiles = Directory.GetFiles(scriptFolder, "*.sql");
             Array.Sort(scriptFiles);
-            var script = string.Join('\n', scriptFiles.Select(File.ReadAllText));
-            context.Database.ExecuteSqlRaw(script);
+
+            logger.LogInformation("Found {Count} SQL scripts: {Files}",
+                scriptFiles.Length,
+                string.Join(", ", scriptFiles.Select(Path.GetFileName)));
+
+            if (scriptFiles.Length == 0)
+                throw new InvalidOperationException($"No .sql scripts found in: {scriptFolder}");
+
+
+            Array.Sort(scriptFiles);
+            foreach (var file in scriptFiles)
+            {
+                var sql = File.ReadAllText(file);
+                context.Database.ExecuteSqlRaw(sql);
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred seeding the database with test data. Error: {Message}", ex.Message);
+            logger.LogError(ex, "Seeding failed: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -68,6 +87,8 @@ public abstract class BaseTestFactory<TDbContext> : WebApplicationFactory<Progra
         var pooling = Environment.GetEnvironmentVariable("DATABASE_POOLING") ?? "true";
 
         var connectionString = $"Server={server};Port={port};Database={database};User ID={user};Password={password};Pooling={pooling};Include Error Detail=True";
+
+        Console.WriteLine($"[TEST DB] Database={database} Server={server} Port={port} User={user}");
 
         return opt => opt.UseNpgsql(connectionString);
     }

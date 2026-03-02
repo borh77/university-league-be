@@ -1,4 +1,4 @@
-INSERT INTO uni_league."Players"
+INSERT INTO unileague."Players"
     ("Id", "TeamId", "FirstName", "LastName", "JerseyNumber", "ImageUrl")
 VALUES
 (-101, -10, 'Marko',   'Marković',   10, '/players/markovic.png'),

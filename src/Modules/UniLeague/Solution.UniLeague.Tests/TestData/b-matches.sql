@@ -1,4 +1,4 @@
-INSERT INTO uni_league."Matches"
+INSERT INTO unileague."Matches"
     ("Id", "LeagueId", "RoundNumber",
      "HomeTeamId", "HomeTeamName", "HomeTeamLogoUrl",
      "AwayTeamId", "AwayTeamName", "AwayTeamLogoUrl",

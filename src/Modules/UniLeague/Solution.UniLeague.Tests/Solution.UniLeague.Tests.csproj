@@ -31,4 +31,8 @@
     <ProjectReference Include="..\Solution.UniLeague.Infrastructure\Solution.UniLeague.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TestData\" />
+  </ItemGroup>
+
 </Project>
