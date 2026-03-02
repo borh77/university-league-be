@@ -1,4 +1,4 @@
-﻿using Solution.BuildingBlocks.Infrastructure.Database;
+using Solution.BuildingBlocks.Infrastructure.Database;
 using Solution.UniLeague.API.Public;
 using Solution.UniLeague.Core.Mappers;
 using Solution.UniLeague.Core.RepositoryInterfaces;
@@ -8,6 +8,7 @@ using Solution.UniLeague.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Solution.UniLeague.Core.Domain.RepositoryInterfaces;
 
 namespace Solution.UniLeague.Infrastructure;
 
@@ -27,14 +28,19 @@ public static class UniLeagueStartup
     private static void SetupCore(IServiceCollection services)
     {
        
-        services.AddScoped<IHealthService, HealthService>();
-
-        
+        services.AddScoped<IHealthService, HealthService>();        
         services.AddScoped<IStandingsService, StandingsService>();
+        services.AddScoped<ILeagueService, LeagueService>();
+        services.AddScoped<ITeamService, TeamService>();
+
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
     {
+        
+        services.AddScoped<IMatchRepository, MatchDbRepository>();
+        services.AddScoped<ITeamRepository, TeamDbRepository>();
+
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(
             DbConnectionStringBuilder.Build("unileague")); 
         dataSourceBuilder.EnableDynamicJson();
