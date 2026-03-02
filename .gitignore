@@ -549,3 +549,5 @@ $RECYCLE.BIN/
 
 # Migrations
 src/**/Migrations/*
+#wwwroot
+*wwwroot

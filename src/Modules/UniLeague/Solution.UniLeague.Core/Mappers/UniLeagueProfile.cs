@@ -1,4 +1,6 @@
 using AutoMapper;
+using Solution.UniLeague.API.Dtos;
+using Solution.UniLeague.Core.Domain;
 
 namespace Solution.UniLeague.Core.Mappers;
 
@@ -7,5 +9,14 @@ namespace Solution.UniLeague.Core.Mappers;
 /// </summary>
 public class UniLeagueProfile : Profile
 {
-    public UniLeagueProfile() { }
+    public UniLeagueProfile()
+    {
+        CreateMap<Match, MatchDto>()
+            .ForMember(dest => dest.Result,
+                opt => opt.MapFrom(src => src.Result != null ? src.Result.ToString() : null))
+            .ReverseMap();
+
+        CreateMap<Player, PlayerDto>().ReverseMap();
+        CreateMap<Team, TeamProfileDto>().ReverseMap();
+    }
 }
