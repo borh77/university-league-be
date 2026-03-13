@@ -184,4 +184,58 @@ public class MatchResultTests
     {
         QuarterScore.Create(1, 25, 21).ToString().ShouldBe("Q1: 25:21");
     }
-}
+
+
+    [Fact]
+    public void Creates_set_successfully()
+    {
+        var s = SetScore.Create(1, 25, 21);
+        s.SetNumber.ShouldBe(1);
+        s.HomeScore.ShouldBe(25);
+        s.AwayScore.ShouldBe(21);
+    }
+
+    [Fact]
+    public void Fails_with_zero_set_number()
+    {
+        Should.Throw<ArgumentException>(() => SetScore.Create(0, 25, 21));
+    }
+
+    [Fact]
+    public void Fails_with_negative_set_number()
+    {
+        Should.Throw<ArgumentException>(() => SetScore.Create(-1, 25, 21));
+    }
+
+    [Fact]
+    public void Fails_sets_with_negative_home_score()
+    {
+        Should.Throw<ArgumentException>(() => SetScore.Create(1, -1, 21));
+    }
+
+    [Fact]
+    public void Fails_sets_with_negative_away_score()
+    {
+        Should.Throw<ArgumentException>(() => SetScore.Create(1, 25, -1));
+    }
+
+    [Fact]
+    public void HomeWonSet_returns_true_when_home_score_higher()
+    {
+        SetScore.Create(1, 25, 21).HomeWonSet().ShouldBeTrue();
+        SetScore.Create(1, 25, 21).AwayWonSet().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void AwayWonSet_returns_true_when_away_score_higher()
+    {
+        SetScore.Create(2, 22, 25).AwayWonSet().ShouldBeTrue();
+        SetScore.Create(2, 22, 25).HomeWonSet().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ToString_set_returns_correct_format()
+    {
+        SetScore.Create(1, 25, 21).ToString().ShouldBe("S1: 25:21");
+    }
+}    

@@ -38,7 +38,22 @@ public class UniLeagueContext : DbContext
 
                    quarter.HasKey("MatchId", "QuarterNumber");
               });
-          });
+
+               // rezultati po setovima (odbojka) u zasebnoj tabeli
+               result.OwnsMany(r => r.Sets, set =>
+               {
+                   set.ToTable("SetScores");
+
+                   set.WithOwner().HasForeignKey("MatchId");
+                   set.Property<long>("MatchId");
+                   
+                   set.Property(s => s.SetNumber);
+                   set.Property(s => s.HomeScore).HasColumnName("HomeScore");
+                   set.Property(s => s.AwayScore).HasColumnName("AwayScore");
+                   
+                   set.HasKey("MatchId", "SetNumber");
+               });
+           });
 
     //    modelBuilder.Entity<Match>()
     //.OwnsOne(m => m.Result, result =>

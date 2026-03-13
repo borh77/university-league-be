@@ -14,4 +14,5 @@ public class MatchDto
     public DateTime ScheduledAt { get; set; }
     public string? Result { get; set; }
     public List<QuarterScoreDto>? Quarters { get; set; }
+    public List<SetScoreDto>? Sets { get; set; }
 }

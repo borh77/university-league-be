@@ -307,4 +307,112 @@ public class LeagueServiceTests
         result[0].Result.ShouldBe("2:1");
         result[0].Quarters.ShouldBeNull(); 
     }
+
+    [Fact]
+    public void GetResults_maps_set_scores_correctly()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Vojvodina Ribarska", "Spartak Subotica");
+
+        var sets = new[]
+        {
+        SetScore.Create(1, 25, 21),
+        SetScore.Create(2, 22, 25),
+        SetScore.Create(3, 25, 18),
+        SetScore.Create(4, 25, 19),
+    };
+        match.SetResult(MatchResult.CreateWithSets(3, 1, sets));
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        var dto = result[0];
+        dto.Result.ShouldBe("3:1");
+        dto.Sets.ShouldNotBeNull();
+        dto.Sets!.Count.ShouldBe(4);
+        dto.Sets![0].SetNumber.ShouldBe(1);
+        dto.Sets![0].HomeScore.ShouldBe(25);
+        dto.Sets![0].AwayScore.ShouldBe(21);
+        dto.Quarters.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetResults_returns_null_sets_for_matches_without_sets()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Partizan", "Vojvodina");
+        match.SetResult(MatchResult.Create(2, 1)); // rezultat bez setova
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        result[0].Sets.ShouldBeNull();
+        result[0].Quarters.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetResults_throws_when_sets_do_not_match_result()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Vojvodina Ribarska", "Spartak Subotica");
+
+        // Home dobija 3 seta, ali rezultat tvrdi 2:1
+        var sets = new[]
+        {
+        SetScore.Create(1, 25, 21),
+        SetScore.Create(2, 25, 18),
+        SetScore.Create(3, 25, 19),
+    };
+
+        // Act & Assert
+        Should.Throw<ArgumentException>(() =>
+            match.SetResult(MatchResult.CreateWithSets(2, 1, sets)));
+    }
+
+    [Fact]
+    public void GetResults_sets_result_without_service_call_correctly()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Vojvodina Ribarska", "Spartak Subotica");
+        //Act
+        var sets = new[]
+        {
+        SetScore.Create(1, 25, 21),
+        SetScore.Create(2, 22, 25),
+        SetScore.Create(3, 25, 18),
+        SetScore.Create(4, 25, 19),
+    };
+        match.SetResult(MatchResult.CreateWithSets(3, 1, sets));
+
+        //Assert
+        match.HasResult.ShouldBeTrue();
+        match.Result!.HasSets.ShouldBeTrue();
+        match.Result!.HasQuarters.ShouldBeFalse();
+        match.Result!.Sets.Count.ShouldBe(4);
+        match.Result!.ToString().ShouldBe("3:1");
+    }
+
+
 }
