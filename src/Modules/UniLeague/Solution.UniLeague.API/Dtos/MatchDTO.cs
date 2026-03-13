@@ -13,4 +13,5 @@ public class MatchDto
     public string AwayTeamLogoUrl { get; set; }
     public DateTime ScheduledAt { get; set; }
     public string? Result { get; set; }
+    public List<QuarterScoreDto>? Quarters { get; set; }
 }

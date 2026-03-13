@@ -18,12 +18,40 @@ public class UniLeagueContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Match>()
+           .OwnsOne(m => m.Result, result =>
+           {
+               result.Property(r => r.HomeScore).HasColumnName("HomeScore");
+               result.Property(r => r.AwayScore).HasColumnName("AwayScore");
 
-        modelBuilder.Entity<Match>().OwnsOne(m => m.Result, r =>
-        {
-            r.Property(x => x.HomeScore).HasColumnName("HomeScore");
-            r.Property(x => x.AwayScore).HasColumnName("AwayScore");
-        });
+               // rezultati po četvrtinama u zasebnoj tabeli
+               result.OwnsMany(r => r.Quarters, quarter =>
+               {
+                   quarter.ToTable("QuarterScores");
+
+                   quarter.WithOwner().HasForeignKey("MatchId");
+                   quarter.Property<long>("MatchId");
+
+                   quarter.Property(q => q.QuarterNumber);
+                   quarter.Property(q => q.HomeScore).HasColumnName("HomeScore");
+                   quarter.Property(q => q.AwayScore).HasColumnName("AwayScore");
+
+                   quarter.HasKey("MatchId", "QuarterNumber");
+              });
+          });
+
+    //    modelBuilder.Entity<Match>()
+    //.OwnsOne(m => m.Result, result =>
+    //{
+    //    result.Property(r => r.HomeScore).HasColumnName("HomeScore");
+    //    result.Property(r => r.AwayScore).HasColumnName("AwayScore");
+
+    //    // Četvrtine kao JSON kolona
+    //    result.OwnsMany(r => r.Quarters, quarter =>
+    //    {
+    //        quarter.ToJson();
+    //    });
+    //});
 
         modelBuilder.HasDefaultSchema("unileague"); // might change in the future, but for now this is fine
         modelBuilder.ApplyConfiguration(new LeagueConfiguration());

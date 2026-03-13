@@ -247,4 +247,64 @@ public class LeagueServiceTests
         result.ShouldNotBeNull();
         result.Count.ShouldBe(0);
     }
+    [Fact]
+    public void GetResults_maps_quarter_scores_when_present()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Crvena zvezda KK", "Partizan KK");
+
+        // kreiramo MatchResult sa četvrtinama
+        var quarters = new[]
+        {
+        QuarterScore.Create(1, 25, 21),
+        QuarterScore.Create(2, 22, 25),
+        QuarterScore.Create(3, 30, 28),
+        QuarterScore.Create(4, 25, 21),
+    };
+        match.SetResult(MatchResult.CreateWithQuarters(102, 95, quarters));
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        result[0].Result.ShouldBe("102:95");
+        result[0].Quarters.ShouldNotBeNull();
+        result[0].Quarters!.Count.ShouldBe(4);
+        result[0].Quarters![0].QuarterNumber.ShouldBe(1);
+        result[0].Quarters![0].HomeScore.ShouldBe(25);
+        result[0].Quarters![0].AwayScore.ShouldBe(21);
+    }
+
+    [Fact]
+    public void GetResults_returns_null_quarters_for_matches_without_quarters()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Partizan", "Vojvodina");
+        match.SetResult(MatchResult.Create(2, 1)); // bez četvrtina
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        result[0].Result.ShouldBe("2:1");
+        result[0].Quarters.ShouldBeNull(); 
+    }
 }

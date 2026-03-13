@@ -27,14 +27,14 @@ public class MatchDbRepository : IMatchRepository
     }
 
     public PagedResult<Match> GetResultsByLeague(long leagueId)
-    { 
-            var task = _dbContext.Matches
-            .Where(m => m.LeagueId == leagueId && m.Result != null)
+    {
+        var task = _dbContext.Matches
+            .Include("Result.Quarters") // include quarter scores
+            .Where(m => m.LeagueId == leagueId && m.Result.HomeScore != null)
             .OrderBy(m => m.RoundNumber)
             .ThenBy(m => m.ScheduledAt)
             .GetPaged(0, 0);
         task.Wait();
         return task.Result;
-                   
     }
 }

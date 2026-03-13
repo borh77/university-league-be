@@ -42,4 +42,146 @@ public class MatchResultTests
     {
         Should.Throw<ArgumentException>(() => MatchResult.Create(0, -1));
     }
+
+    [Fact]
+    public void Create_without_quarters_has_no_quarters()
+    {
+        var result = MatchResult.Create(3, 1);
+        result.HasQuarters.ShouldBeFalse();
+        result.Quarters.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CreateWithQuarters_creates_successfully()
+    {
+        var quarters = new[]
+        {
+            QuarterScore.Create(1, 25, 21),
+            QuarterScore.Create(2, 22, 25),
+            QuarterScore.Create(3, 30, 28),
+            QuarterScore.Create(4, 25, 21),
+        };
+
+        var result = MatchResult.CreateWithQuarters(102, 95, quarters);
+
+        result.HomeScore.ShouldBe(102);
+        result.AwayScore.ShouldBe(95);
+        result.HasQuarters.ShouldBeTrue();
+        result.Quarters.Count.ShouldBe(4);
+    }
+
+    [Fact]
+    public void CreateWithQuarters_sorts_quarters_chronologically()
+    {
+        //namerno unesen van reda
+        var quarters = new[]
+        {
+            QuarterScore.Create(3, 30, 28),
+            QuarterScore.Create(1, 25, 21),
+            QuarterScore.Create(4, 25, 21),
+            QuarterScore.Create(2, 22, 25),
+        };
+
+        var result = MatchResult.CreateWithQuarters(102, 95, quarters);
+
+        result.Quarters[0].QuarterNumber.ShouldBe(1);
+        result.Quarters[1].QuarterNumber.ShouldBe(2);
+        result.Quarters[2].QuarterNumber.ShouldBe(3);
+        result.Quarters[3].QuarterNumber.ShouldBe(4);
+    }
+
+    [Fact]
+    public void CreateWithQuarters_fails_when_sum_does_not_match_total()
+    {
+        var quarters = new[]
+        {
+            QuarterScore.Create(1, 25, 21),
+            QuarterScore.Create(2, 22, 25),
+        };
+
+        //ukupno tvrdi 100:90 ali zbir je 47:46 — neispravno
+        Should.Throw<ArgumentException>(() =>
+            MatchResult.CreateWithQuarters(100, 90, quarters));
+    }
+
+    [Fact]
+    public void CreateWithQuarters_fails_when_quarter_numbers_not_sequential()
+    {
+        //preskače Q2
+        var quarters = new[]
+        {
+            QuarterScore.Create(1, 25, 21),
+            QuarterScore.Create(3, 30, 28),
+        };
+
+        Should.Throw<ArgumentException>(() =>
+            MatchResult.CreateWithQuarters(55, 49, quarters));
+    }
+
+    [Fact]
+    public void CreateWithQuarters_fails_with_empty_list()
+    {
+        Should.Throw<ArgumentException>(() =>
+            MatchResult.CreateWithQuarters(10, 8, Array.Empty<QuarterScore>()));
+    }
+
+    [Fact]
+    public void CreateWithQuarters_fails_with_null()
+    {
+        Should.Throw<ArgumentNullException>(() =>
+            MatchResult.CreateWithQuarters(10, 8, null!));
+    }
+
+    [Fact]
+    public void ToString_returns_total_score_regardless_of_quarters()
+    {
+        var quarters = new[]
+        {
+            QuarterScore.Create(1, 25, 21),
+            QuarterScore.Create(2, 22, 25),
+            QuarterScore.Create(3, 30, 28),
+            QuarterScore.Create(4, 25, 21),
+        };
+
+        MatchResult.CreateWithQuarters(102, 95, quarters).ToString().ShouldBe("102:95");
+    }
+
+    [Fact]
+    public void Create_quarter_successfully()
+    {
+        var q = QuarterScore.Create(1, 25, 21);
+        q.QuarterNumber.ShouldBe(1);
+        q.HomeScore.ShouldBe(25);
+        q.AwayScore.ShouldBe(21);
+    }
+
+    [Fact]
+    public void Fails_with_zero_quarter_number()
+    {
+        Should.Throw<ArgumentException>(() => QuarterScore.Create(0, 10, 8));
+    }
+
+    [Fact]
+    public void Fails_with_negative_quarter_number()
+    {
+        Should.Throw<ArgumentException>(() => QuarterScore.Create(-1, 10, 8));
+    }
+
+    [Fact]
+    public void Fails_quarter_with_negative_home_score()
+    {
+        Should.Throw<ArgumentException>(() => QuarterScore.Create(1, -1, 8));
+    }
+
+    [Fact]
+    public void Fails_quarter_with_negative_away_score()
+    {
+        Should.Throw<ArgumentException>(() => QuarterScore.Create(1, 10, -1));
+    }
+
+    [Fact]
+    public void ToString_quarter_returns_correct_format()
+    {
+        QuarterScore.Create(1, 25, 21).ToString().ShouldBe("Q1: 25:21");
+    }
 }
