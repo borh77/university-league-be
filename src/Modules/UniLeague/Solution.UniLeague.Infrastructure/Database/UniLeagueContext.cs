@@ -59,9 +59,7 @@ public class UniLeagueContext : DbContext
                {
                    goal.ToTable("GoalEvents");
                    goal.WithOwner().HasForeignKey("MatchId");
-                   goal.Property<long>("MatchId");
-                   goal.Property<int>("Id"); //više golova može biti u istom minutu
-                   goal.HasKey("MatchId", "Id");
+                   // Id se sada automatski mapira iz Entity klase
                    goal.Property(g => g.ScorerName).HasMaxLength(200);
                    goal.Property(g => g.TeamName).HasMaxLength(200);
                    goal.Property(g => g.IsHomeTeamGoal);

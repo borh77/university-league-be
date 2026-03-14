@@ -2,14 +2,14 @@
 
 namespace Solution.UniLeague.Core.Domain;
 
-public class GoalEvent : ValueObject
+public class GoalEvent : Entity  
 {
     public string ScorerName { get; }
     public string TeamName { get; }
     public bool IsHomeTeamGoal { get; }
     public int Minute { get; }
 
-    private GoalEvent() { } // EF
+    private GoalEvent() { } // EF 
 
     private GoalEvent(string scorerName, string teamName, bool isHomeTeamGoal, int minute)
     {
@@ -30,12 +30,4 @@ public class GoalEvent : ValueObject
         => new(scorerName, teamName, isHomeTeamGoal, minute);
 
     public override string ToString() => $"{Minute}' {ScorerName} ({TeamName})";
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return ScorerName;
-        yield return TeamName;
-        yield return IsHomeTeamGoal;
-        yield return Minute;
-    }
 }
