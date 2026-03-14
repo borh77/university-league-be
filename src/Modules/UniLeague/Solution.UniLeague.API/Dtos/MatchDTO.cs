@@ -15,4 +15,5 @@ public class MatchDto
     public string? Result { get; set; }
     public List<QuarterScoreDto>? Quarters { get; set; }
     public List<SetScoreDto>? Sets { get; set; }
+    public List<GoalEventDto>? Goals { get; set; }
 }

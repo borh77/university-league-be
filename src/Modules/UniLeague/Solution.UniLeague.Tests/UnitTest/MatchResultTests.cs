@@ -238,4 +238,117 @@ public class MatchResultTests
     {
         SetScore.Create(1, 25, 21).ToString().ShouldBe("S1: 25:21");
     }
+
+    [Fact]
+    public void Create_without_goals_has_no_goals()
+    {
+        var result = MatchResult.Create(2, 1);
+        result.HasGoals.ShouldBeFalse();
+        result.Goals.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CreateWithGoals_creates_successfully()
+    {
+        var goals = new[]
+        {
+            GoalEvent.Create("Natcho",  "Partizan",  true,  23),
+            GoalEvent.Create("Šljivić", "Vojvodina", false, 45),
+            GoalEvent.Create("Mendy",   "Partizan",  true,  67),
+        };
+
+        var result = MatchResult.CreateWithGoals(2, 1, goals);
+
+        result.HomeScore.ShouldBe(2);
+        result.AwayScore.ShouldBe(1);
+        result.HasGoals.ShouldBeTrue();
+        result.Goals.Count.ShouldBe(3);
+        result.HasQuarters.ShouldBeFalse();
+        result.HasSets.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CreateWithGoals_sorts_goals_chronologically_by_minute()
+    {
+        var goals = new[]
+        {
+            GoalEvent.Create("Mendy",   "Partizan",  true,  67),
+            GoalEvent.Create("Natcho",  "Partizan",  true,  23),
+            GoalEvent.Create("Šljivić", "Vojvodina", false, 45),
+        };
+
+        var result = MatchResult.CreateWithGoals(2, 1, goals);
+
+        result.Goals[0].Minute.ShouldBe(23);
+        result.Goals[1].Minute.ShouldBe(45);
+        result.Goals[2].Minute.ShouldBe(67);
+    }
+
+    [Fact]
+    public void CreateWithGoals_allows_multiple_goals_in_same_minute()
+    {
+        var goals = new[]
+        {
+            GoalEvent.Create("Igrač A", "Partizan",  true, 45),
+            GoalEvent.Create("Igrač B", "Vojvodina", false, 45),
+        };
+
+        var result = MatchResult.CreateWithGoals(1, 1, goals);
+
+        result.Goals.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void CreateWithGoals_fails_when_home_goal_count_does_not_match_score()
+    {
+        var goals = new[]
+        {
+            GoalEvent.Create("Natcho",  "Partizan",  true,  23),
+            GoalEvent.Create("Šljivić", "Vojvodina", false, 45),
+        };
+
+        Should.Throw<ArgumentException>(() =>
+            MatchResult.CreateWithGoals(2, 1, goals));
+    }
+
+    [Fact]
+    public void CreateWithGoals_fails_when_away_goal_count_does_not_match_score()
+    {
+        var goals = new[]
+        {
+            GoalEvent.Create("Natcho",  "Partizan",  true,  23),
+            GoalEvent.Create("Šljivić", "Vojvodina", false, 45),
+            GoalEvent.Create("Đurić",   "Vojvodina", false, 70),
+        };
+
+        Should.Throw<ArgumentException>(() =>
+            MatchResult.CreateWithGoals(2, 1, goals));
+    }
+
+    [Fact]
+    public void CreateWithGoals_fails_with_empty_list()
+    {
+        Should.Throw<ArgumentException>(() =>
+            MatchResult.CreateWithGoals(1, 0, Array.Empty<GoalEvent>()));
+    }
+
+    [Fact]
+    public void CreateWithGoals_fails_with_null()
+    {
+        Should.Throw<ArgumentNullException>(() =>
+            MatchResult.CreateWithGoals(1, 0, null!));
+    }
+
+    [Fact]
+    public void ToString_returns_score_regardless_of_goals()
+    {
+        var goals = new[]
+        {
+            GoalEvent.Create("Natcho",  "Partizan",  true,  23),
+            GoalEvent.Create("Šljivić", "Vojvodina", false, 45),
+            GoalEvent.Create("Mendy",   "Partizan",  true,  67),
+        };
+
+        MatchResult.CreateWithGoals(2, 1, goals).ToString().ShouldBe("2:1");
+    }
 }    

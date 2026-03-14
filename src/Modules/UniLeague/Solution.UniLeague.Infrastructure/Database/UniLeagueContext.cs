@@ -53,6 +53,20 @@ public class UniLeagueContext : DbContext
                    
                    set.HasKey("MatchId", "SetNumber");
                });
+
+               // Golovi i strelci (fudbal)
+               result.OwnsMany(r => r.Goals, goal =>
+               {
+                   goal.ToTable("GoalEvents");
+                   goal.WithOwner().HasForeignKey("MatchId");
+                   goal.Property<long>("MatchId");
+                   goal.Property<int>("Id"); //više golova može biti u istom minutu
+                   goal.HasKey("MatchId", "Id");
+                   goal.Property(g => g.ScorerName).HasMaxLength(200);
+                   goal.Property(g => g.TeamName).HasMaxLength(200);
+                   goal.Property(g => g.IsHomeTeamGoal);
+                   goal.Property(g => g.Minute);
+               });
            });
 
     //    modelBuilder.Entity<Match>()

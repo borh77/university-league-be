@@ -414,5 +414,116 @@ public class LeagueServiceTests
         match.Result!.ToString().ShouldBe("3:1");
     }
 
+    [Fact]
+    public void GetResults_maps_goal_events_when_present()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 2, "Partizan", "Vojvodina");
+
+        var goals = new[]
+        {
+        GoalEvent.Create("Natcho",  "Partizan",  true,  23),
+        GoalEvent.Create("Šljivić", "Vojvodina", false, 45),
+        GoalEvent.Create("Mendy",   "Partizan",  true,  67),
+    };
+        match.SetResult(MatchResult.CreateWithGoals(2, 1, goals));
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        result[0].Result.ShouldBe("2:1");
+        result[0].Goals.ShouldNotBeNull();
+        result[0].Goals!.Count.ShouldBe(3);
+
+        result[0].Goals![0].Minute.ShouldBe(23);
+        result[0].Goals![0].ScorerName.ShouldBe("Natcho");
+        result[0].Goals![0].IsHomeTeamGoal.ShouldBeTrue();
+
+        result[0].Goals![1].Minute.ShouldBe(45);
+        result[0].Goals![1].ScorerName.ShouldBe("Šljivić");
+        result[0].Goals![1].IsHomeTeamGoal.ShouldBeFalse();
+
+        result[0].Goals![2].Minute.ShouldBe(67);
+        result[0].Goals![2].ScorerName.ShouldBe("Mendy");
+        result[0].Goals![2].IsHomeTeamGoal.ShouldBeTrue();
+
+        result[0].Quarters.ShouldBeNull();
+        result[0].Sets.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetResults_goals_are_sorted_chronologically()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 2, "Partizan", "Vojvodina");
+
+        var goals = new[]
+        {
+        GoalEvent.Create("Mendy",   "Partizan",  true,  67),
+        GoalEvent.Create("Natcho",  "Partizan",  true,  23),
+        GoalEvent.Create("Šljivić", "Vojvodina", false, 45),
+    };
+        match.SetResult(MatchResult.CreateWithGoals(2, 1, goals));
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+        var mappedGoals = result[0].Goals!;
+
+        // Assert
+        mappedGoals[0].Minute.ShouldBe(23);
+        mappedGoals[1].Minute.ShouldBe(45);
+        mappedGoals[2].Minute.ShouldBe(67);
+    }
+
+    [Fact]
+    public void GetResults_returns_null_goals_for_non_football_match()
+    {
+        // Arrange
+        var leagueId = 1L;
+        var match = CreateMatch(1, leagueId, 1, "Crvena zvezda KK", "Partizan KK");
+
+        var quarters = new[]
+        {
+        QuarterScore.Create(1, 25, 21),
+        QuarterScore.Create(2, 22, 25),
+        QuarterScore.Create(3, 30, 28),
+        QuarterScore.Create(4, 25, 21),
+    };
+        match.SetResult(MatchResult.CreateWithQuarters(102, 95, quarters));
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetResultsByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
+            .CreateMapper();
+        var service = new LeagueService(repo.Object, mapper);
+
+        // Act
+        var result = service.GetResultsByLeague(leagueId);
+
+        // Assert
+        result[0].Goals.ShouldBeNull();
+        result[0].Quarters.ShouldNotBeNull();
+    }
 
 }

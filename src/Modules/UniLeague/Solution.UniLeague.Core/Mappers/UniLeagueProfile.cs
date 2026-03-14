@@ -17,6 +17,7 @@ public class UniLeagueProfile : Profile
 
         CreateMap<QuarterScore, QuarterScoreDto>();
         CreateMap<SetScore, SetScoreDto>();
+        CreateMap<GoalEvent, GoalEventDto>();
 
         CreateMap<Match, MatchDto>()
             .ForMember(dest => dest.Result,
@@ -27,6 +28,11 @@ public class UniLeagueProfile : Profile
                 opt => opt.MapFrom(src =>
                     src.Result != null && src.Result.HasSets
                         ? src.Result.Sets
+                        : null))
+            .ForMember(dest => dest.Goals,
+                opt => opt.MapFrom(src =>
+                    src.Result != null && src.Result.HasGoals
+                        ? src.Result.Goals
                         : null));
 
         CreateMap<Player, PlayerDto>().ReverseMap();

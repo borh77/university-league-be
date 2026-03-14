@@ -12,7 +12,7 @@ VALUES
          -13, 'Čukarički',        '/logos/cukaricki.png',
          '2025-09-14 20:00:00', NULL, NULL),
 
--- Fudbalski mečevi sa rezultatom bez cetvrtina i setova
+-- Fudbalski mečevi sa rezultatom bez cetvrtina i setova 
 (-3, -1, 2, -11, 'Partizan',     '/logos/partizan.png',
          -12, 'Vojvodina',        '/logos/vojvodina.png',
          '2025-09-21 18:00:00', 2, 1),
@@ -72,3 +72,19 @@ VALUES
 (-8, 3, 25, 23),
 (-8, 4, 23, 25),
 (-8, 5, 15, 12);
+INSERT INTO unileague."GoalEvents"
+    ("MatchId", "ScorerName", "TeamName", "IsHomeTeamGoal", "Minute")
+VALUES
+(-3, 'Natcho',  'Partizan',  true,  23),
+(-3, 'Šljivić', 'Vojvodina', false, 45),
+(-3, 'Mendy',   'Partizan',  true,  67);
+
+-- Golovi za fudbalski meč -4: Čukarički 0:3 Crvena zvezda
+-- Čukarički (home): nema golova
+-- Crvena zvezda (away): Katai 12', Štulić 55', Rodić 89'
+INSERT INTO unileague."GoalEvents"
+    ("MatchId", "ScorerName", "TeamName", "IsHomeTeamGoal", "Minute")
+VALUES
+(-4, 'Katai',  'Crvena zvezda', false, 12),
+(-4, 'Štulić', 'Crvena zvezda', false, 55),
+(-4, 'Rodić',  'Crvena zvezda', false, 89);

@@ -15,10 +15,17 @@ public class MatchResult : ValueObject
     public IReadOnlyList<SetScore> Sets => _sets.AsReadOnly();
     public bool HasSets => _sets.Count > 0;
 
+    private readonly List<GoalEvent> _goals = new();
+    public IReadOnlyList<GoalEvent> Goals => _goals.AsReadOnly();
+    public bool HasGoals => _goals.Count > 0;
 
     private MatchResult() { } // EF 
 
-    private MatchResult(int homeScore, int awayScore, IEnumerable<QuarterScore>? quarters, IEnumerable<SetScore>? sets)
+    private MatchResult(
+        int homeScore, int awayScore,
+        IEnumerable<QuarterScore>? quarters,
+        IEnumerable<SetScore>? sets,
+        IEnumerable<GoalEvent>? goals)
     {
         ValidateNonNegative(homeScore, nameof(homeScore));
         ValidateNonNegative(awayScore, nameof(awayScore));
@@ -39,26 +46,39 @@ public class MatchResult : ValueObject
             ValidateSets(list, homeScore, awayScore);
             _sets = list;
         }
+
+        if (goals is not null)
+        {
+            var list = goals.OrderBy(g => g.Minute).ToList();
+            ValidateGoals(list, homeScore, awayScore);
+            _goals = list;
+        }
     }
 
     //Koristiti za sportove bez četvrtina i setova (fudbal)
     public static MatchResult Create(int homeScore, int awayScore)
-        => new(homeScore, awayScore, null, null);
+        => new(homeScore, awayScore, null, null, null);
 
-    //Koristiti za sportove sa četvrtinama (košarka, američki fudbal).</summary>
+    //Koristiti za sportove sa četvrtinama (košarka, američki fudbal)
     public static MatchResult CreateWithQuarters(int homeScore, int awayScore, IEnumerable<QuarterScore> quarters)
     {
         ArgumentNullException.ThrowIfNull(quarters);
-        return new(homeScore, awayScore, quarters, null);
+        return new(homeScore, awayScore, quarters, null, null);
     }
 
     //Koristiti za sportove sa setovima (odbojka)
     public static MatchResult CreateWithSets(int homeScore, int awayScore, IEnumerable<SetScore> sets)
     {
         ArgumentNullException.ThrowIfNull(sets);
-        return new(homeScore, awayScore, null, sets);
+        return new(homeScore, awayScore, null, sets, null);
     }
 
+    //Koristiti za fudbalske utakmice sa listom golova i strelaca
+    public static MatchResult CreateWithGoals(int homeScore, int awayScore, IEnumerable<GoalEvent> goals)
+    {
+        ArgumentNullException.ThrowIfNull(goals);
+        return new(homeScore, awayScore, null, null, goals);
+    }
 
     public bool IsDraw() => HomeScore == AwayScore;
     public bool HomeWon() => HomeScore > AwayScore;
@@ -89,7 +109,6 @@ public class MatchResult : ValueObject
         if (sumHome != totalHome)
             throw new ArgumentException(
                 $"Sum of home quarter scores ({sumHome}) does not match total home score ({totalHome}).");
-
         if (sumAway != totalAway)
             throw new ArgumentException(
                 $"Sum of away quarter scores ({sumAway}) does not match total away score ({totalAway}).");
@@ -119,12 +138,29 @@ public class MatchResult : ValueObject
                 $"Number of sets won by away team ({setsWonAway}) does not match away score ({totalAwaySets}).");
     }
 
+    private static void ValidateGoals(List<GoalEvent> goals, int totalHome, int totalAway)
+    {
+        if (goals.Count == 0)
+            throw new ArgumentException("Goals list cannot be empty when provided.");
+
+        var homeGoals = goals.Count(g => g.IsHomeTeamGoal);
+        var awayGoals = goals.Count(g => !g.IsHomeTeamGoal);
+
+        if (homeGoals != totalHome)
+            throw new ArgumentException(
+                $"Number of home goals ({homeGoals}) does not match home score ({totalHome}).");
+        if (awayGoals != totalAway)
+            throw new ArgumentException(
+                $"Number of away goals ({awayGoals}) does not match away score ({totalAway}).");
+    }
+
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return HomeScore;
         yield return AwayScore;
-        foreach (var q in _quarters)
-            yield return q;
+        foreach (var q in _quarters) yield return q;
+        foreach (var s in _sets) yield return s;
+        foreach (var g in _goals) yield return g;
     }
 
     public override string ToString() => $"{HomeScore}:{AwayScore}";
