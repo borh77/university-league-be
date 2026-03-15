@@ -13,4 +13,6 @@ public interface IMatchRepository
 {
     public PagedResult<Match> GetScheduleByLeague(long leagueId);
     public PagedResult<Match> GetResultsByLeague(long leagueId);
+
+    public List<Match> GetAllPlayedByLeague(long leagueId);
 }

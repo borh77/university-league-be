@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Solution.BuildingBlocks.Infrastructure\Solution.BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>

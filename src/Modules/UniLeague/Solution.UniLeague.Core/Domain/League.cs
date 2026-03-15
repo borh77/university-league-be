@@ -20,17 +20,4 @@ public class League : Entity
         Sport = sport;
         LeagueGender = sport == Sport.Volleyball ? leagueGender : null;
     }
-
-
-    // Sortiranje: Points DESC → Difference DESC → Scored DESC
-
-    public IReadOnlyList<StandingEntry> GetSortedStandings()
-    {
-        return _standings
-            .OrderByDescending(s => s.Points)
-            .ThenByDescending(s => s.Difference)
-            .ThenByDescending(s => s.Scored)
-            .ToList()
-            .AsReadOnly();
-    }
 }
