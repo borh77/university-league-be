@@ -18,6 +18,9 @@ public class MatchDbRepository : IMatchRepository
     public PagedResult<Match> GetScheduleByLeague(long leagueId)
     {
         var task = _dbContext.Matches
+            .Include("Result.Quarters")
+            .Include("Result.Sets")
+            .Include("Result.Goals")
             .Where(m => m.LeagueId == leagueId)
             .OrderBy(m => m.RoundNumber)
             .ThenBy(m => m.ScheduledAt)
@@ -27,14 +30,16 @@ public class MatchDbRepository : IMatchRepository
     }
 
     public PagedResult<Match> GetResultsByLeague(long leagueId)
-    { 
-            var task = _dbContext.Matches
+    {
+        var task = _dbContext.Matches
+            .Include("Result.Quarters")
+            .Include("Result.Sets")
+            .Include("Result.Goals")
             .Where(m => m.LeagueId == leagueId && m.Result != null)
             .OrderBy(m => m.RoundNumber)
             .ThenBy(m => m.ScheduledAt)
             .GetPaged(0, 0);
         task.Wait();
         return task.Result;
-                   
     }
 }
