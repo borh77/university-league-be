@@ -28,4 +28,10 @@ public class ScheduleController : ControllerBase
     {
         return Ok(_leaguePublicService.GetResultsByLeague(leagueId));
     }
+
+    [HttpGet("top-scorers")]
+    public ActionResult<List<TopScorerDto>> GetTopScorers(long leagueId)
+    {
+        return Ok(_leaguePublicService.GetTopScorersByLeague(leagueId));
+    }
 }
