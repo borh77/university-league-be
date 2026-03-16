@@ -1,14 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Solution.BuildingBlocks.Infrastructure.Database;
 using Solution.UniLeague.API.Public;
+using Solution.UniLeague.Core.Domain.RepositoryInterfaces;
 using Solution.UniLeague.Core.Mappers;
 using Solution.UniLeague.Core.RepositoryInterfaces;
 using Solution.UniLeague.Core.UseCases;
 using Solution.UniLeague.Infrastructure.Database;
 using Solution.UniLeague.Infrastructure.Database.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
-using Solution.UniLeague.Core.Domain.RepositoryInterfaces;
+using Solution.UniLeague.Infrastructure.Database.Services;
 
 namespace Solution.UniLeague.Infrastructure;
 
@@ -32,6 +33,7 @@ public static class UniLeagueStartup
         services.AddScoped<IStandingsService, StandingsService>();
         services.AddScoped<ILeagueService, LeagueService>();
         services.AddScoped<ITeamService, TeamService>();
+        services.AddScoped<ITopScorerQueryService, TopScorerQueryService>();
 
     }
 
