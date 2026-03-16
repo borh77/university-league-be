@@ -42,4 +42,13 @@ public class MatchDbRepository : IMatchRepository
         task.Wait();
         return task.Result;
     }
+
+    public List<Match> GetAllPlayedByLeague(long leagueId)
+    {
+        return _dbContext.Matches
+            .Include("Result.Sets")
+            .Include("Result.Quarters")
+            .Where(m => m.LeagueId == leagueId && m.Result != null)
+            .ToList();
+    }
 }
