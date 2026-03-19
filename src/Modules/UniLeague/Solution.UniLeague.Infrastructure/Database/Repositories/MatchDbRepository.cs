@@ -1,0 +1,54 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Solution.BuildingBlocks.Core.UseCases;
+using Solution.BuildingBlocks.Infrastructure.Database;
+using Solution.UniLeague.Core.Domain;
+using Solution.UniLeague.Core.Domain.RepositoryInterfaces;
+
+namespace Solution.UniLeague.Infrastructure.Database.Repositories;
+
+public class MatchDbRepository : IMatchRepository
+{
+    private readonly UniLeagueContext _dbContext;
+
+    public MatchDbRepository(UniLeagueContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public PagedResult<Match> GetScheduleByLeague(long leagueId)
+    {
+        var task = _dbContext.Matches
+            .Include("Result.Quarters")
+            .Include("Result.Sets")
+            .Include("Result.Goals")
+            .Where(m => m.LeagueId == leagueId)
+            .OrderBy(m => m.RoundNumber)
+            .ThenBy(m => m.ScheduledAt)
+            .GetPaged(0, 0);
+        task.Wait();
+        return task.Result;
+    }
+
+    public PagedResult<Match> GetResultsByLeague(long leagueId)
+    {
+        var task = _dbContext.Matches
+            .Include("Result.Quarters")
+            .Include("Result.Sets")
+            .Include("Result.Goals")
+            .Where(m => m.LeagueId == leagueId && m.Result != null)
+            .OrderBy(m => m.RoundNumber)
+            .ThenBy(m => m.ScheduledAt)
+            .GetPaged(0, 0);
+        task.Wait();
+        return task.Result;
+    }
+
+    public List<Match> GetAllPlayedByLeague(long leagueId)
+    {
+        return _dbContext.Matches
+            .Include("Result.Sets")
+            .Include("Result.Quarters")
+            .Where(m => m.LeagueId == leagueId && m.Result != null)
+            .ToList();
+    }
+}

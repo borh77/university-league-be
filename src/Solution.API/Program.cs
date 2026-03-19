@@ -24,6 +24,8 @@ else
     app.UseHsts();
 }
 
+app.UseStaticFiles();
+
 app.UseRouting();
 app.UseCors(corsPolicy);
 app.UseHttpsRedirection();

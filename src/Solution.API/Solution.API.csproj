@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Modules\UniLeague\Solution.UniLeague.Infrastructure\Solution.UniLeague.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\logos\" />
+  </ItemGroup>
+
 </Project>
