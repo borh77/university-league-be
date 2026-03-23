@@ -17,6 +17,7 @@ public class StandingEntryConfiguration : IEntityTypeConfiguration<StandingEntry
         builder.HasIndex(s => new { s.LeagueId, s.TeamId }).IsUnique();
 
         builder.Property(s => s.TeamName).IsRequired().HasMaxLength(200);
+        builder.Property(s => s.LogoUrl).IsRequired(false);
         builder.Property(s => s.Played).IsRequired();
         builder.Property(s => s.Won).IsRequired();
         builder.Property(s => s.Drawn).IsRequired();  

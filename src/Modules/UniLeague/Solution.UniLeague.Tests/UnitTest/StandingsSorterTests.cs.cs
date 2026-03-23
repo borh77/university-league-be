@@ -381,12 +381,12 @@ public class StandingsSorterTests
     private static IReadOnlyList<Match> NoMatches() => new List<Match>().AsReadOnly();
 
     private static StandingEntry Entry(int teamId, string teamName, int points, int scored, int conceded)
-        => new(-1, teamId, teamName, played: 10, won: 5, drawn: 0, lost: 5,
+        => new(-1, teamId, teamName, logoUrl: null, played: 10, won: 5, drawn: 0, lost: 5,
                points, scored, conceded);
 
     private static StandingEntry VolleyballEntry(int teamId, string teamName, int points,
         int setWon, int setLost, int scored, int conceded)
-        => new(-1, teamId, teamName, played: 8, won: 5, drawn: 0, lost: 3,
+        => new(-1, teamId, teamName, logoUrl: null, played: 8, won: 5, drawn: 0, lost: 3,
                points, scored, conceded, setWon: setWon, setLost: setLost);
 
     private static Match FootballMatch(int homeId, int awayId, int homeGoals, int awayGoals)
