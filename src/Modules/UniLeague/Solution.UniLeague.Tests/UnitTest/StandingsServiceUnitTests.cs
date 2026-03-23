@@ -170,8 +170,8 @@ public class StandingsServiceUnitTests
         var league = new League(Sport.Football);
         GetStandingsField(league).AddRange(new[]
         {
-            new StandingEntry(-1, 1, "Red Lions",   10, 7, 3, 0, 24, 22, 9),
-            new StandingEntry(-1, 2, "Blue Eagles", 10, 6, 3, 1, 21, 18, 11)
+            new StandingEntry(-1, 1, "Red Lions", "/logos/zvezda.png",  10, 7, 3, 0, 24, 22, 9),
+            new StandingEntry(-1, 2, "Blue Eagles", "/logos/zvezda.png",10, 6, 3, 1, 21, 18, 11)
         });
         return league;
     }
@@ -181,8 +181,8 @@ public class StandingsServiceUnitTests
         var league = new League(Sport.Volleyball, gender);
         GetStandingsField(league).AddRange(new[]
         {
-            new StandingEntry(-2, 10, "Ace Spikers",   8, 7, 0, 1, 21, 890, 710, setWon: 21, setLost: 6),
-            new StandingEntry(-2, 11, "Block Masters", 8, 5, 0, 3, 15, 820, 790, setWon: 17, setLost: 11)
+            new StandingEntry(-2, 10, "Ace Spikers", "/logos/zvezda.png",   8, 7, 0, 1, 21, 890, 710, setWon: 21, setLost: 6),
+            new StandingEntry(-2, 11, "Block Masters", "/logos/zvezda.png", 8, 5, 0, 3, 15, 820, 790, setWon: 17, setLost: 11)
         });
         return league;
     }

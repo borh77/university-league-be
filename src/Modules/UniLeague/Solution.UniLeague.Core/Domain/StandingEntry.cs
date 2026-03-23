@@ -8,6 +8,7 @@ public class StandingEntry : Entity
     public int TeamId { get; private set; }
 
     public string TeamName { get; private set; }
+    public string? LogoUrl { get; private set; }
     public int Played { get; private set; }
     public int Won { get; private set; }
     public int Drawn { get; private set; }
@@ -30,6 +31,7 @@ public class StandingEntry : Entity
         long leagueId,
         int teamId,
         string teamName,
+        string? logoUrl,
         int played,
         int won,
         int drawn,
@@ -48,6 +50,7 @@ public class StandingEntry : Entity
         LeagueId = leagueId;
         TeamId = teamId;
         TeamName = teamName;
+        LogoUrl = logoUrl;
         Played = played;
         Won = won;
         Drawn = drawn;

@@ -62,7 +62,7 @@ public class LeagueUnitTests
     [Fact]
     public void StandingEntry_creates_successfully()
     {
-        var entry = new StandingEntry(-1, 1, "Red Lions", 10, 7, 2, 1, 23, 22, 9);
+        var entry = new StandingEntry(-1, 1, "Red Lions", "/logos/zvezda.png", 10, 7, 2, 1, 23, 22, 9);
 
         entry.TeamId.ShouldBe(1);
         entry.TeamName.ShouldBe("Red Lions");
@@ -75,7 +75,7 @@ public class LeagueUnitTests
     [Fact]
     public void StandingEntry_difference_is_computed_correctly()
     {
-        var entry = new StandingEntry(-1, 1, "Team A", 10, 5, 0, 5, 10, 15, 8);
+        var entry = new StandingEntry(-1, 1, "Team A", "/logos/zvezda.png", 10, 5, 0, 5, 10, 15, 8);
 
         entry.Difference.ShouldBe(7);
     }
@@ -84,27 +84,27 @@ public class LeagueUnitTests
     public void StandingEntry_fails_with_empty_team_name()
     {
         Should.Throw<ArgumentException>(() =>
-            new StandingEntry(-1, 1, "", 10, 7, 2, 1, 23, 20, 9));
+            new StandingEntry(-1, 1, "", "", 10, 7, 2, 1, 23, 20, 9));
     }
 
     [Fact]
     public void StandingEntry_fails_with_negative_points()
     {
         Should.Throw<ArgumentException>(() =>
-            new StandingEntry(-1, 1, "Team A", 10, 7, 2, 1, -1, 20, 9));
+            new StandingEntry(-1, 1, "Team A", "", 10, 7, 2, 1, -1, 20, 9));
     }
 
     [Fact]
     public void StandingEntry_fails_with_negative_scored()
     {
         Should.Throw<ArgumentException>(() =>
-            new StandingEntry(-1, 1, "Team A", 10, 7, 2, 1, 23, -1, 9));
+            new StandingEntry(-1, 1, "Team A", "", 10, 7, 2, 1, 23, -1, 9));
     }
 
     [Fact]
     public void StandingEntry_volleyball_has_set_stats()
     {
-        var entry = new StandingEntry(-2, 10, "Ace Spikers", 8, 7, 0, 1, 21, 890, 710,
+        var entry = new StandingEntry(-2, 10, "Ace Spikers", "/logos/zvezda.png", 8, 7, 0, 1, 21, 890, 710,
             setWon: 21, setLost: 6);
 
         entry.SetWon.ShouldBe(21);
@@ -115,7 +115,7 @@ public class LeagueUnitTests
     [Fact]
     public void StandingEntry_non_volleyball_has_null_set_stats()
     {
-        var entry = new StandingEntry(-1, 1, "Red Lions", 10, 7, 2, 1, 23, 22, 9);
+        var entry = new StandingEntry(-1, 1, "Red Lions", "/logos/zvezda.png", 10, 7, 2, 1, 23, 22, 9);
 
         entry.SetWon.ShouldBeNull();
         entry.SetLost.ShouldBeNull();
