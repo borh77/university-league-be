@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using Solution.API.Middleware;
 using Solution.API.Startup;
-// Dodaj using za tvoj DB context - proveri da li je putanja tačna
 using Solution.UniLeague.Infrastructure.Database;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +14,11 @@ builder.Services.ConfigureCors(corsPolicy);
 builder.Services.RegisterModules();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 using (var scope = app.Services.CreateScope())
 {
@@ -36,23 +41,20 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"GREŠKA: {ex.Message}");
     }
 }
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
-{
-    app.UseHsts();
-}
 
 app.UseStaticFiles();
-
 app.UseRouting();
+
 app.UseCors(corsPolicy);
-app.UseHttpsRedirection();
 
 app.MapControllers();
 
