@@ -20,20 +20,20 @@ public class UniLeagueProfile : Profile
         CreateMap<GoalEvent, GoalEventDto>();
 
         CreateMap<Match, MatchDto>()
-            .ForMember(dest => dest.Result,
-                opt => opt.MapFrom(src => src.Result != null ? src.Result.ToString() : null))
-            .ForMember(dest => dest.Quarters,
-                opt => opt.MapFrom(src => src.Result != null && src.Result.HasQuarters ? src.Result.Quarters : null))
-            .ForMember(dest => dest.Sets,
-                opt => opt.MapFrom(src =>
-                    src.Result != null && src.Result.HasSets
-                        ? src.Result.Sets
-                        : null))
-            .ForMember(dest => dest.Goals,
-                opt => opt.MapFrom(src =>
-                    src.Result != null && src.Result.HasGoals
-                        ? src.Result.Goals
-                        : null));
+     .ForMember(dest => dest.Result,
+         opt => opt.MapFrom(src => src.Result != null ? src.Result.ToString() : null))
+     .ForMember(dest => dest.Quarters,
+         opt => opt.MapFrom(src => src.Result != null && src.Result.HasQuarters
+             ? src.Result.Quarters.OrderBy(q => q.QuarterNumber).ToList()
+             : null))
+     .ForMember(dest => dest.Sets,
+         opt => opt.MapFrom(src => src.Result != null && src.Result.HasSets
+             ? src.Result.Sets.OrderBy(s => s.SetNumber).ToList()
+             : null))
+     .ForMember(dest => dest.Goals,
+         opt => opt.MapFrom(src => src.Result != null && src.Result.HasGoals
+             ? src.Result.Goals.OrderBy(g => g.Minute).ToList()
+             : null));
 
         CreateMap<Player, PlayerDto>().ReverseMap();
         CreateMap<Team, TeamProfileDto>().ReverseMap();
