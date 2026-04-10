@@ -36,6 +36,11 @@ public class UniLeagueProfile : Profile
              : null));
 
         CreateMap<Player, PlayerDto>().ReverseMap();
-        CreateMap<Team, TeamProfileDto>().ReverseMap();
+        CreateMap<Team, TeamProfileDto>()
+            .ForMember(dest => dest.Players,
+                opt => opt.MapFrom(src => src.Players
+                    .OrderBy(p => p.JerseyNumber)
+                    .ToList()))
+            .ReverseMap();
     }
 }
