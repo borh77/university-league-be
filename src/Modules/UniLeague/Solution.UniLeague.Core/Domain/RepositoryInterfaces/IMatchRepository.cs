@@ -15,4 +15,7 @@ public interface IMatchRepository
     public PagedResult<Match> GetResultsByLeague(long leagueId);
 
     public List<Match> GetAllPlayedByLeague(long leagueId);
+    public List<Match> GetRegularSeasonMatchesByLeague(long leagueId);
+    public bool HasPlayoffSemifinals(long leagueId);
+    public bool AddPlayoffSemifinalsIfNone(long leagueId, IReadOnlyCollection<Match> matches);
 }

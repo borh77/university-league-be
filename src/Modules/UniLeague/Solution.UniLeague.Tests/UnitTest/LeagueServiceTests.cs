@@ -83,6 +83,33 @@ public class LeagueServiceTests
     }
 
     [Fact]
+    public void Maps_playoff_metadata_for_schedule_matches()
+    {
+        var leagueId = 1L;
+        var match = new Solution.UniLeague.Core.Domain.Match(
+            leagueId, 3,
+            1, "Seed 1", "/logos/1.png",
+            4, "Seed 4", "/logos/4.png",
+            new DateTime(2026, 6, 1, 18, 0, 0),
+            MatchStage.PlayoffSemifinal,
+            1,
+            4);
+
+        var repo = new Mock<IMatchRepository>();
+        repo.Setup(r => r.GetScheduleByLeague(leagueId))
+            .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(
+                new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+
+        var result = CreateService(repo).GetScheduleByLeague(leagueId);
+
+        result[0].Stage.ShouldBe("PlayoffSemifinal");
+        result[0].IsPlayoff.ShouldBeTrue();
+        result[0].PlayoffRoundLabel.ShouldBe("Semifinal");
+        result[0].HomeSeed.ShouldBe(1);
+        result[0].AwaySeed.ShouldBe(4);
+    }
+
+    [Fact]
     public void Filters_matches_by_league_id()
     {
         var leagueId = 5L;
@@ -367,7 +394,8 @@ public class LeagueServiceTests
         var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
             .CreateMapper();
         var topScorerQueryService = new Mock<ITopScorerQueryService>();
-        return new LeagueService(repo.Object, mapper, topScorerQueryService.Object); 
+        var playoffService = new Mock<IPlayoffService>();
+        return new LeagueService(repo.Object, mapper, topScorerQueryService.Object, playoffService.Object); 
     }
 
     private static Solution.UniLeague.Core.Domain.Match CreateMatch(long id, long leagueId, int roundNumber,

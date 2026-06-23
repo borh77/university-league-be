@@ -13,15 +13,18 @@ public class StandingsService : IStandingsService
     private readonly ILeagueRepository _leagueRepository;
     private readonly IMatchRepository _matchRepository;
     private readonly IMapper _mapper;
+    private readonly IPlayoffService _playoffService;
 
     public StandingsService(
         ILeagueRepository leagueRepository,
         IMatchRepository matchRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IPlayoffService playoffService)
     {
         _leagueRepository = leagueRepository;
         _matchRepository = matchRepository;
         _mapper = mapper;
+        _playoffService = playoffService;
     }
 
     public List<StandingsRowDto> GetStandings(string sport, string? gender)
@@ -46,6 +49,8 @@ public class StandingsService : IStandingsService
             ?? throw new NotFoundException(
                 $"League not found for sport '{parsedSport}'" +
                 (parsedGender.HasValue ? $" and gender '{parsedGender}'" : string.Empty));
+
+        _playoffService.EnsurePlayoffsGenerated(league.Id);
 
         var matches = _matchRepository.GetAllPlayedByLeague(league.Id);
 

@@ -18,6 +18,23 @@ public class UniLeagueContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Match>(builder =>
+        {
+            builder.Property(m => m.Stage)
+                .HasConversion<string>()
+                .HasDefaultValue(MatchStage.RegularSeason)
+                .IsRequired();
+
+            builder.Property(m => m.HomeSeed)
+                .IsRequired(false);
+
+            builder.Property(m => m.AwaySeed)
+                .IsRequired(false);
+
+            builder.HasIndex(m => new { m.LeagueId, m.Stage, m.HomeSeed, m.AwaySeed })
+                .IsUnique();
+        });
+
         modelBuilder.Entity<Match>()
            .OwnsOne(m => m.Result, result =>
            {

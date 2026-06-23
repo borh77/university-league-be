@@ -9,4 +9,5 @@ public interface ILeagueRepository
     /// Za ostale sportove: filtrira samo po sport (gender se ignoriše).
     /// </summary>
     League? GetBySportAndGenderWithStandings(Sport sport, Gender? gender);
+    League? GetByIdWithStandings(long leagueId);
 }

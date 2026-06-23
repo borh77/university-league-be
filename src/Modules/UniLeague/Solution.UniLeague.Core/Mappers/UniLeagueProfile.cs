@@ -22,6 +22,12 @@ public class UniLeagueProfile : Profile
         CreateMap<Match, MatchDto>()
      .ForMember(dest => dest.Result,
          opt => opt.MapFrom(src => src.Result != null ? src.Result.ToString() : null))
+     .ForMember(dest => dest.Stage,
+         opt => opt.MapFrom(src => src.Stage.ToString()))
+     .ForMember(dest => dest.IsPlayoff,
+         opt => opt.MapFrom(src => src.IsPlayoff))
+     .ForMember(dest => dest.PlayoffRoundLabel,
+         opt => opt.MapFrom(src => src.Stage == MatchStage.PlayoffSemifinal ? "Semifinal" : null))
      .ForMember(dest => dest.Quarters,
          opt => opt.MapFrom(src => src.Result != null && src.Result.HasQuarters
              ? src.Result.Quarters.OrderBy(q => q.QuarterNumber).ToList()

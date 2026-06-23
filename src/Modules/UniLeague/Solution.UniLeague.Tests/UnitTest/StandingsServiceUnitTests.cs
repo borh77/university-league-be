@@ -144,7 +144,8 @@ public class StandingsServiceUnitTests
         var service = new StandingsService(
             leagueRepo.Object,
             new Mock<IMatchRepository>().Object,
-            _mapper);
+            _mapper,
+            new Mock<IPlayoffService>().Object);
 
         Should.Throw<NotFoundException>(() => service.GetStandings("football", null));
     }
@@ -162,7 +163,7 @@ public class StandingsServiceUnitTests
         matchRepo.Setup(r => r.GetAllPlayedByLeague(It.IsAny<long>()))
             .Returns(matches ?? new List<Match>());
 
-        return new StandingsService(leagueRepo.Object, matchRepo.Object, _mapper);
+        return new StandingsService(leagueRepo.Object, matchRepo.Object, _mapper, new Mock<IPlayoffService>().Object);
     }
 
     private static League CreateFootballLeagueWithEntries()

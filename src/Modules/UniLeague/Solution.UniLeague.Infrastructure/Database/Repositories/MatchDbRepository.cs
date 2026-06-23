@@ -3,6 +3,7 @@ using Solution.BuildingBlocks.Core.UseCases;
 using Solution.BuildingBlocks.Infrastructure.Database;
 using Solution.UniLeague.Core.Domain;
 using Solution.UniLeague.Core.Domain.RepositoryInterfaces;
+using System.Data;
 
 namespace Solution.UniLeague.Infrastructure.Database.Repositories;
 
@@ -23,6 +24,7 @@ public class MatchDbRepository : IMatchRepository
             .Include("Result.Goals")
             .Where(m => m.LeagueId == leagueId)
             .OrderBy(m => m.RoundNumber)
+            .ThenBy(m => m.Stage)
             .ThenBy(m => m.ScheduledAt)
             .GetPaged(0, 0);
         task.Wait();
@@ -37,6 +39,7 @@ public class MatchDbRepository : IMatchRepository
             .Include("Result.Goals")
             .Where(m => m.LeagueId == leagueId && m.Result != null)
             .OrderBy(m => m.RoundNumber)
+            .ThenBy(m => m.Stage)
             .ThenBy(m => m.ScheduledAt)
             .GetPaged(0, 0);
         task.Wait();
@@ -48,7 +51,44 @@ public class MatchDbRepository : IMatchRepository
         return _dbContext.Matches
             .Include("Result.Sets")
             .Include("Result.Quarters")
-            .Where(m => m.LeagueId == leagueId && m.Result != null)
+            .Where(m => m.LeagueId == leagueId
+                        && m.Stage == MatchStage.RegularSeason
+                        && m.Result != null)
             .ToList();
+    }
+
+    public List<Match> GetRegularSeasonMatchesByLeague(long leagueId)
+    {
+        return _dbContext.Matches
+            .Include("Result.Sets")
+            .Include("Result.Quarters")
+            .Where(m => m.LeagueId == leagueId && m.Stage == MatchStage.RegularSeason)
+            .ToList();
+    }
+
+    public bool HasPlayoffSemifinals(long leagueId)
+    {
+        return _dbContext.Matches
+            .Any(m => m.LeagueId == leagueId && m.Stage == MatchStage.PlayoffSemifinal);
+    }
+
+    public bool AddPlayoffSemifinalsIfNone(long leagueId, IReadOnlyCollection<Match> matches)
+    {
+        if (matches.Count == 0)
+            return false;
+
+        using var transaction = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable);
+
+        if (HasPlayoffSemifinals(leagueId))
+        {
+            transaction.Commit();
+            return false;
+        }
+
+        _dbContext.Matches.AddRange(matches);
+        _dbContext.SaveChanges();
+        transaction.Commit();
+
+        return true;
     }
 }

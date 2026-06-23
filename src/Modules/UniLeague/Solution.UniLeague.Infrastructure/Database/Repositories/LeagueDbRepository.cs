@@ -24,4 +24,11 @@ public class LeagueDbRepository : ILeagueRepository
 
         return query.FirstOrDefault();
     }
+
+    public League? GetByIdWithStandings(long leagueId)
+    {
+        return _context.Leagues
+            .Include(l => l.Standings)
+            .FirstOrDefault(l => l.Id == leagueId);
+    }
 }

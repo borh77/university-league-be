@@ -33,6 +33,7 @@ public static class UniLeagueStartup
         services.AddScoped<IStandingsService, StandingsService>();
         services.AddScoped<ILeagueService, LeagueService>();
         services.AddScoped<ITeamService, TeamService>();
+        services.AddScoped<IPlayoffService, PlayoffService>();
         services.AddScoped<ITopScorerQueryService, TopScorerQueryService>();
 
     }
