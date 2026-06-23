@@ -66,6 +66,15 @@ public class MatchDbRepository : IMatchRepository
             .ToList();
     }
 
+    public List<Match> GetPlayoffMatchesByLeague(long leagueId)
+    {
+        return _dbContext.Matches
+            .Include("Result.Sets")
+            .Include("Result.Quarters")
+            .Where(m => m.LeagueId == leagueId && m.Stage != MatchStage.RegularSeason)
+            .ToList();
+    }
+
     public bool HasPlayoffSemifinals(long leagueId)
     {
         return _dbContext.Matches
@@ -74,18 +83,38 @@ public class MatchDbRepository : IMatchRepository
 
     public bool AddPlayoffSemifinalsIfNone(long leagueId, IReadOnlyCollection<Match> matches)
     {
-        if (matches.Count == 0)
+        return AddPlayoffMatchesIfStagesMissing(
+            leagueId,
+            new[] { MatchStage.PlayoffSemifinal },
+            matches);
+    }
+
+    public bool AddPlayoffMatchesIfStagesMissing(
+        long leagueId,
+        IReadOnlyCollection<MatchStage> stages,
+        IReadOnlyCollection<Match> matches)
+    {
+        if (stages.Count == 0 || matches.Count == 0)
             return false;
 
         using var transaction = _dbContext.Database.BeginTransaction(IsolationLevel.Serializable);
 
-        if (HasPlayoffSemifinals(leagueId))
+        var existingStages = _dbContext.Matches
+            .Where(m => m.LeagueId == leagueId && stages.Contains(m.Stage))
+            .Select(m => m.Stage)
+            .ToHashSet();
+
+        var missingStageMatches = matches
+            .Where(m => !existingStages.Contains(m.Stage))
+            .ToList();
+
+        if (missingStageMatches.Count == 0)
         {
             transaction.Commit();
             return false;
         }
 
-        _dbContext.Matches.AddRange(matches);
+        _dbContext.Matches.AddRange(missingStageMatches);
         _dbContext.SaveChanges();
         transaction.Commit();
 

@@ -17,9 +17,15 @@ public class PlayoffService : IPlayoffService
 
     public void EnsurePlayoffsGenerated(long leagueId)
     {
+        EnsureSemifinalsGenerated(leagueId);
+        EnsureFinalAndThirdPlaceGenerated(leagueId);
+    }
+
+    private void EnsureSemifinalsGenerated(long leagueId)
+    {
         if (_matchRepository.HasPlayoffSemifinals(leagueId))
             return;
-
+        
         var regularSeasonMatches = _matchRepository.GetRegularSeasonMatchesByLeague(leagueId);
         if (regularSeasonMatches.Count == 0 || regularSeasonMatches.Any(m => !m.HasResult))
             return;
@@ -48,6 +54,66 @@ public class PlayoffService : IPlayoffService
         _matchRepository.AddPlayoffSemifinalsIfNone(leagueId, semifinals);
     }
 
+    private void EnsureFinalAndThirdPlaceGenerated(long leagueId)
+    {
+        var playoffMatches = _matchRepository.GetPlayoffMatchesByLeague(leagueId);
+        var hasFinal = playoffMatches.Any(m => m.Stage == MatchStage.PlayoffFinal);
+        var hasThirdPlace = playoffMatches.Any(m => m.Stage == MatchStage.PlayoffThirdPlace);
+
+        if (hasFinal && hasThirdPlace)
+            return;
+
+        var semifinals = playoffMatches
+            .Where(m => m.Stage == MatchStage.PlayoffSemifinal)
+            .OrderBy(m => m.HomeSeed)
+            .ThenBy(m => m.ScheduledAt)
+            .ToList();
+
+        if (semifinals.Count != 2 || semifinals.Any(m => !m.HasResult))
+            return;
+
+        var firstWinner = semifinals[0].GetWinner();
+        var firstLoser = semifinals[0].GetLoser();
+        var secondWinner = semifinals[1].GetWinner();
+        var secondLoser = semifinals[1].GetLoser();
+
+        if (firstWinner is null || firstLoser is null || secondWinner is null || secondLoser is null)
+            return;
+
+        var roundNumber = semifinals.Max(m => m.RoundNumber) + 1;
+        var finalScheduledAt = semifinals.Max(m => m.ScheduledAt).AddDays(7);
+        var thirdPlaceScheduledAt = finalScheduledAt.AddHours(-2);
+
+        var matchesToCreate = new List<Match>();
+
+        if (!hasThirdPlace)
+        {
+            matchesToCreate.Add(CreatePlayoffMatch(
+                leagueId,
+                roundNumber,
+                firstLoser,
+                secondLoser,
+                thirdPlaceScheduledAt,
+                MatchStage.PlayoffThirdPlace));
+        }
+
+        if (!hasFinal)
+        {
+            matchesToCreate.Add(CreatePlayoffMatch(
+                leagueId,
+                roundNumber,
+                firstWinner,
+                secondWinner,
+                finalScheduledAt,
+                MatchStage.PlayoffFinal));
+        }
+
+        _matchRepository.AddPlayoffMatchesIfStagesMissing(
+            leagueId,
+            matchesToCreate.Select(m => m.Stage).ToList(),
+            matchesToCreate);
+    }
+
     private static Match CreateSemifinal(
         long leagueId,
         int roundNumber,
@@ -70,5 +136,28 @@ public class PlayoffService : IPlayoffService
             MatchStage.PlayoffSemifinal,
             homeSeed,
             awaySeed);
+    }
+
+    private static Match CreatePlayoffMatch(
+        long leagueId,
+        int roundNumber,
+        MatchTeamSnapshot home,
+        MatchTeamSnapshot away,
+        DateTime scheduledAt,
+        MatchStage stage)
+    {
+        return new Match(
+            leagueId,
+            roundNumber,
+            home.TeamId,
+            home.TeamName,
+            home.TeamLogoUrl,
+            away.TeamId,
+            away.TeamName,
+            away.TeamLogoUrl,
+            scheduledAt,
+            stage,
+            home.Seed,
+            away.Seed);
     }
 }

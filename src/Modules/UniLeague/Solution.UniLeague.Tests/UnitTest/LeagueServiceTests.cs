@@ -86,7 +86,7 @@ public class LeagueServiceTests
     public void Maps_playoff_metadata_for_schedule_matches()
     {
         var leagueId = 1L;
-        var match = new Solution.UniLeague.Core.Domain.Match(
+        var semifinal = new Solution.UniLeague.Core.Domain.Match(
             leagueId, 3,
             1, "Seed 1", "/logos/1.png",
             4, "Seed 4", "/logos/4.png",
@@ -94,11 +94,27 @@ public class LeagueServiceTests
             MatchStage.PlayoffSemifinal,
             1,
             4);
+        var final = new Solution.UniLeague.Core.Domain.Match(
+            leagueId, 4,
+            1, "Seed 1", "/logos/1.png",
+            3, "Seed 3", "/logos/3.png",
+            new DateTime(2026, 6, 8, 18, 0, 0),
+            MatchStage.PlayoffFinal,
+            1,
+            3);
+        var thirdPlace = new Solution.UniLeague.Core.Domain.Match(
+            leagueId, 4,
+            4, "Seed 4", "/logos/4.png",
+            2, "Seed 2", "/logos/2.png",
+            new DateTime(2026, 6, 8, 16, 0, 0),
+            MatchStage.PlayoffThirdPlace,
+            4,
+            2);
 
         var repo = new Mock<IMatchRepository>();
         repo.Setup(r => r.GetScheduleByLeague(leagueId))
             .Returns(new PagedResult<Solution.UniLeague.Core.Domain.Match>(
-                new List<Solution.UniLeague.Core.Domain.Match> { match }, 1));
+                new List<Solution.UniLeague.Core.Domain.Match> { semifinal, final, thirdPlace }, 3));
 
         var result = CreateService(repo).GetScheduleByLeague(leagueId);
 
@@ -107,6 +123,10 @@ public class LeagueServiceTests
         result[0].PlayoffRoundLabel.ShouldBe("Semifinal");
         result[0].HomeSeed.ShouldBe(1);
         result[0].AwaySeed.ShouldBe(4);
+        result[1].Stage.ShouldBe("PlayoffFinal");
+        result[1].PlayoffRoundLabel.ShouldBe("Final");
+        result[2].Stage.ShouldBe("PlayoffThirdPlace");
+        result[2].PlayoffRoundLabel.ShouldBe("Third Place");
     }
 
     [Fact]

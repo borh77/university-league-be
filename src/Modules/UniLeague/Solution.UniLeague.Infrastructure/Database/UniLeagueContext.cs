@@ -32,7 +32,8 @@ public class UniLeagueContext : DbContext
                 .IsRequired(false);
 
             builder.HasIndex(m => new { m.LeagueId, m.Stage, m.HomeSeed, m.AwaySeed })
-                .IsUnique();
+                .IsUnique()
+                .HasFilter("\"Stage\" <> 'RegularSeason'");
         });
 
         modelBuilder.Entity<Match>()

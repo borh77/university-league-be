@@ -16,6 +16,11 @@ public interface IMatchRepository
 
     public List<Match> GetAllPlayedByLeague(long leagueId);
     public List<Match> GetRegularSeasonMatchesByLeague(long leagueId);
+    public List<Match> GetPlayoffMatchesByLeague(long leagueId);
     public bool HasPlayoffSemifinals(long leagueId);
     public bool AddPlayoffSemifinalsIfNone(long leagueId, IReadOnlyCollection<Match> matches);
+    public bool AddPlayoffMatchesIfStagesMissing(
+        long leagueId,
+        IReadOnlyCollection<MatchStage> stages,
+        IReadOnlyCollection<Match> matches);
 }

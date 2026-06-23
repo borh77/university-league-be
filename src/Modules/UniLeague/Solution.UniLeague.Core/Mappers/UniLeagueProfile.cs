@@ -27,7 +27,13 @@ public class UniLeagueProfile : Profile
      .ForMember(dest => dest.IsPlayoff,
          opt => opt.MapFrom(src => src.IsPlayoff))
      .ForMember(dest => dest.PlayoffRoundLabel,
-         opt => opt.MapFrom(src => src.Stage == MatchStage.PlayoffSemifinal ? "Semifinal" : null))
+         opt => opt.MapFrom(src => src.Stage == MatchStage.PlayoffSemifinal
+             ? "Semifinal"
+             : src.Stage == MatchStage.PlayoffFinal
+                 ? "Final"
+                 : src.Stage == MatchStage.PlayoffThirdPlace
+                     ? "Third Place"
+                     : null))
      .ForMember(dest => dest.Quarters,
          opt => opt.MapFrom(src => src.Result != null && src.Result.HasQuarters
              ? src.Result.Quarters.OrderBy(q => q.QuarterNumber).ToList()

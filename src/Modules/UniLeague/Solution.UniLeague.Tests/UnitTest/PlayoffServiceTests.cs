@@ -96,6 +96,157 @@ public class PlayoffServiceTests
             Times.Never);
     }
 
+    [Fact]
+    public void Does_not_generate_final_or_third_place_before_both_semifinals_have_results()
+    {
+        var league = CreateLeagueWithStandings();
+        var semifinals = CreateSemifinals(firstHasResult: true, secondHasResult: false);
+        var matchRepo = CreateMatchRepo(league.Id, CreateCompletedRegularSeason(), hasPlayoffs: true, playoffMatches: semifinals);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        matchRepo.Verify(
+            r => r.AddPlayoffMatchesIfStagesMissing(
+                It.IsAny<long>(),
+                It.IsAny<IReadOnlyCollection<MatchStage>>(),
+                It.IsAny<IReadOnlyCollection<Match>>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public void Generates_final_and_third_place_after_both_semifinals_have_results()
+    {
+        var league = CreateLeagueWithStandings();
+        var captured = new List<Match>();
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: CreateSemifinals(firstHasResult: true, secondHasResult: true),
+            capturedNextPhaseMatches: captured);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        captured.Count.ShouldBe(2);
+        captured.Count(m => m.Stage == MatchStage.PlayoffFinal).ShouldBe(1);
+        captured.Count(m => m.Stage == MatchStage.PlayoffThirdPlace).ShouldBe(1);
+    }
+
+    [Fact]
+    public void Assigns_semifinal_winners_to_final()
+    {
+        var league = CreateLeagueWithStandings();
+        var captured = new List<Match>();
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: CreateSemifinals(firstHasResult: true, secondHasResult: true),
+            capturedNextPhaseMatches: captured);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        var final = captured.Single(m => m.Stage == MatchStage.PlayoffFinal);
+        final.HomeTeamName.ShouldBe("Seed 1");
+        final.AwayTeamName.ShouldBe("Seed 3");
+        final.HomeSeed.ShouldBe(1);
+        final.AwaySeed.ShouldBe(3);
+    }
+
+    [Fact]
+    public void Assigns_semifinal_losers_to_third_place()
+    {
+        var league = CreateLeagueWithStandings();
+        var captured = new List<Match>();
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: CreateSemifinals(firstHasResult: true, secondHasResult: true),
+            capturedNextPhaseMatches: captured);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        var thirdPlace = captured.Single(m => m.Stage == MatchStage.PlayoffThirdPlace);
+        thirdPlace.HomeTeamName.ShouldBe("Seed 4");
+        thirdPlace.AwayTeamName.ShouldBe("Seed 2");
+        thirdPlace.HomeSeed.ShouldBe(4);
+        thirdPlace.AwaySeed.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Generates_only_third_place_when_final_already_exists()
+    {
+        var league = CreateLeagueWithStandings();
+        var playoffMatches = CreateSemifinals(firstHasResult: true, secondHasResult: true);
+        playoffMatches.Add(CreatePlayoffMatch(12, MatchStage.PlayoffFinal, 1, "Seed 1", 3, "Seed 3", 1, 3));
+        var captured = new List<Match>();
+
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: playoffMatches,
+            capturedNextPhaseMatches: captured);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        captured.Count.ShouldBe(1);
+        captured.Single().Stage.ShouldBe(MatchStage.PlayoffThirdPlace);
+    }
+
+    [Fact]
+    public void Generates_only_final_when_third_place_already_exists()
+    {
+        var league = CreateLeagueWithStandings();
+        var playoffMatches = CreateSemifinals(firstHasResult: true, secondHasResult: true);
+        playoffMatches.Add(CreatePlayoffMatch(13, MatchStage.PlayoffThirdPlace, 4, "Seed 4", 2, "Seed 2", 4, 2));
+        var captured = new List<Match>();
+
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: playoffMatches,
+            capturedNextPhaseMatches: captured);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        captured.Count.ShouldBe(1);
+        captured.Single().Stage.ShouldBe(MatchStage.PlayoffFinal);
+    }
+
+    [Fact]
+    public void Generates_nothing_when_final_and_third_place_already_exist()
+    {
+        var league = CreateLeagueWithStandings();
+        var playoffMatches = CreateSemifinals(firstHasResult: true, secondHasResult: true);
+        playoffMatches.Add(CreatePlayoffMatch(12, MatchStage.PlayoffFinal, 1, "Seed 1", 3, "Seed 3", 1, 3));
+        playoffMatches.Add(CreatePlayoffMatch(13, MatchStage.PlayoffThirdPlace, 4, "Seed 4", 2, "Seed 2", 4, 2));
+
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: playoffMatches);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        matchRepo.Verify(
+            r => r.AddPlayoffMatchesIfStagesMissing(
+                It.IsAny<long>(),
+                It.IsAny<IReadOnlyCollection<MatchStage>>(),
+                It.IsAny<IReadOnlyCollection<Match>>()),
+            Times.Never);
+    }
+
     private static PlayoffService CreateService(League league, Mock<IMatchRepository> matchRepo)
     {
         var leagueRepo = new Mock<ILeagueRepository>();
@@ -108,16 +259,29 @@ public class PlayoffServiceTests
         long leagueId,
         List<Match> regularMatches,
         bool hasPlayoffs = false,
-        List<Match>? capturedMatches = null)
+        List<Match>? capturedMatches = null,
+        List<Match>? playoffMatches = null,
+        List<Match>? capturedNextPhaseMatches = null)
     {
         var matchRepo = new Mock<IMatchRepository>();
         matchRepo.Setup(r => r.HasPlayoffSemifinals(leagueId)).Returns(hasPlayoffs);
         matchRepo.Setup(r => r.GetRegularSeasonMatchesByLeague(leagueId)).Returns(regularMatches);
+        matchRepo.Setup(r => r.GetPlayoffMatchesByLeague(leagueId)).Returns(playoffMatches ?? new List<Match>());
         matchRepo
             .Setup(r => r.AddPlayoffSemifinalsIfNone(leagueId, It.IsAny<IReadOnlyCollection<Match>>()))
             .Callback<long, IReadOnlyCollection<Match>>((_, matches) =>
             {
                 capturedMatches?.AddRange(matches);
+            })
+            .Returns(true);
+        matchRepo
+            .Setup(r => r.AddPlayoffMatchesIfStagesMissing(
+                leagueId,
+                It.IsAny<IReadOnlyCollection<MatchStage>>(),
+                It.IsAny<IReadOnlyCollection<Match>>()))
+            .Callback<long, IReadOnlyCollection<MatchStage>, IReadOnlyCollection<Match>>((_, _, matches) =>
+            {
+                capturedNextPhaseMatches?.AddRange(matches);
             })
             .Returns(true);
 
@@ -158,6 +322,65 @@ public class PlayoffServiceTests
             CreateMatch(3, 100, 2, 1, "Seed 1", 3, "Seed 3", hasResult: true),
             CreateMatch(4, 100, 2, 2, "Seed 2", 4, "Seed 4", hasResult: true)
         };
+    }
+
+    private static List<Match> CreateSemifinals(bool firstHasResult, bool secondHasResult)
+    {
+        var first = CreatePlayoffMatch(
+            10,
+            MatchStage.PlayoffSemifinal,
+            1,
+            "Seed 1",
+            4,
+            "Seed 4",
+            1,
+            4);
+        var second = CreatePlayoffMatch(
+            11,
+            MatchStage.PlayoffSemifinal,
+            2,
+            "Seed 2",
+            3,
+            "Seed 3",
+            2,
+            3);
+
+        if (firstHasResult)
+            first.SetResult(MatchResult.Create(2, 0));
+
+        if (secondHasResult)
+            second.SetResult(MatchResult.Create(0, 1));
+
+        return new List<Match> { first, second };
+    }
+
+    private static Match CreatePlayoffMatch(
+        long id,
+        MatchStage stage,
+        long homeTeamId,
+        string homeTeamName,
+        long awayTeamId,
+        string awayTeamName,
+        int homeSeed,
+        int awaySeed)
+    {
+        var match = new Match(
+            100,
+            stage == MatchStage.PlayoffSemifinal ? 3 : 4,
+            homeTeamId,
+            homeTeamName,
+            "/logo.png",
+            awayTeamId,
+            awayTeamName,
+            "/logo.png",
+            new DateTime(2026, 1, 10 + (int)id, 18, 0, 0, DateTimeKind.Utc),
+            stage,
+            homeSeed,
+            awaySeed);
+
+        typeof(Match).BaseType!.GetProperty("Id")!.SetValue(match, id);
+
+        return match;
     }
 
     private static Match CreateMatch(

@@ -77,4 +77,26 @@ public class Match : Entity
 
     public bool HasResult => Result is not null;
     public bool IsPlayoff => Stage != MatchStage.RegularSeason;
+
+    public MatchTeamSnapshot? GetWinner()
+    {
+        if (Result is null || Result.IsDraw())
+            return null;
+
+        return Result.HomeWon() ? GetHomeTeamSnapshot() : GetAwayTeamSnapshot();
+    }
+
+    public MatchTeamSnapshot? GetLoser()
+    {
+        if (Result is null || Result.IsDraw())
+            return null;
+
+        return Result.HomeWon() ? GetAwayTeamSnapshot() : GetHomeTeamSnapshot();
+    }
+
+    private MatchTeamSnapshot GetHomeTeamSnapshot()
+        => new(HomeTeamId, HomeTeamName, HomeTeamLogoUrl, HomeSeed);
+
+    private MatchTeamSnapshot GetAwayTeamSnapshot()
+        => new(AwayTeamId, AwayTeamName, AwayTeamLogoUrl, AwaySeed);
 }
