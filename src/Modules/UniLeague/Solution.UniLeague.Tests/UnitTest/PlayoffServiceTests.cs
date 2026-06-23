@@ -47,6 +47,25 @@ public class PlayoffServiceTests
     }
 
     [Fact]
+    public void Generates_playoff_semifinals_for_existing_negative_league_id()
+    {
+        const long leagueId = -4;
+        var league = CreateLeagueWithStandings(leagueId: leagueId);
+        var captured = new List<Match>();
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(leagueId),
+            capturedMatches: captured);
+        var service = CreateService(league, matchRepo);
+
+        service.EnsurePlayoffsGenerated(league.Id);
+
+        captured.Count.ShouldBe(2);
+        captured.All(m => m.LeagueId == leagueId).ShouldBeTrue();
+        captured.All(m => m.Stage == MatchStage.PlayoffSemifinal).ShouldBeTrue();
+    }
+
+    [Fact]
     public void Does_not_duplicate_playoff_matches_when_semifinals_already_exist()
     {
         var league = CreateLeagueWithStandings();
@@ -288,16 +307,16 @@ public class PlayoffServiceTests
         return matchRepo;
     }
 
-    private static League CreateLeagueWithStandings(int teamCount = 4)
+    private static League CreateLeagueWithStandings(int teamCount = 4, long leagueId = 100)
     {
         var league = new League(Sport.Football);
-        typeof(League).BaseType!.GetProperty("Id")!.SetValue(league, 100L);
+        typeof(League).BaseType!.GetProperty("Id")!.SetValue(league, leagueId);
 
         var standings = GetStandingsField(league);
         for (var i = 1; i <= teamCount; i++)
         {
             standings.Add(new StandingEntry(
-                league.Id,
+                leagueId,
                 i,
                 $"Seed {i}",
                 $"/logos/{i}.png",
@@ -313,14 +332,14 @@ public class PlayoffServiceTests
         return league;
     }
 
-    private static List<Match> CreateCompletedRegularSeason()
+    private static List<Match> CreateCompletedRegularSeason(long leagueId = 100)
     {
         return new List<Match>
         {
-            CreateMatch(1, 100, 1, 1, "Seed 1", 2, "Seed 2", hasResult: true),
-            CreateMatch(2, 100, 1, 3, "Seed 3", 4, "Seed 4", hasResult: true),
-            CreateMatch(3, 100, 2, 1, "Seed 1", 3, "Seed 3", hasResult: true),
-            CreateMatch(4, 100, 2, 2, "Seed 2", 4, "Seed 4", hasResult: true)
+            CreateMatch(1, leagueId, 1, 1, "Seed 1", 2, "Seed 2", hasResult: true),
+            CreateMatch(2, leagueId, 1, 3, "Seed 3", 4, "Seed 4", hasResult: true),
+            CreateMatch(3, leagueId, 2, 1, "Seed 1", 3, "Seed 3", hasResult: true),
+            CreateMatch(4, leagueId, 2, 2, "Seed 2", 4, "Seed 4", hasResult: true)
         };
     }
 

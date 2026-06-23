@@ -46,7 +46,7 @@ public class Match : Entity
         int? homeSeed = null,
         int? awaySeed = null)
     {
-        if (leagueId <= 0) throw new ArgumentException("Invalid LeagueId.");
+        if (leagueId == 0) throw new ArgumentException("Invalid LeagueId.");
         if (roundNumber <= 0) throw new ArgumentException("RoundNumber must be positive.");
         if (string.IsNullOrWhiteSpace(homeTeamName)) throw new ArgumentException("HomeTeamName is required.");
         if (string.IsNullOrWhiteSpace(awayTeamName)) throw new ArgumentException("AwayTeamName is required.");

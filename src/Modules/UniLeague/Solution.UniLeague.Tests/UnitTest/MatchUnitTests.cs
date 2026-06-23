@@ -40,14 +40,16 @@ public class MatchTests
     }
 
     [Fact]
-    public void Fails_with_negative_league_id()
+    public void Creates_with_negative_league_id()
     {
-        Should.Throw<ArgumentException>(() => new Match(
+        var match = new Match(
             -1L,
             1,
             10L, "Crvena zvezda", "/logos/zvezda.png",
             11L, "Partizan", "/logos/partizan.png",
-            DateTime.Now));
+            DateTime.Now);
+
+        match.LeagueId.ShouldBe(-1L);
     }
 
     [Fact]
