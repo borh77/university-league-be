@@ -19,6 +19,8 @@
     <ProjectReference Include="..\BuildingBlocks\Solution.BuildingBlocks.Infrastructure\Solution.BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\UniLeague\Solution.UniLeague.API\Solution.UniLeague.API.csproj" />
     <ProjectReference Include="..\Modules\UniLeague\Solution.UniLeague.Infrastructure\Solution.UniLeague.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Solution.Identity.API\Solution.Identity.API.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Solution.Identity.Infrastructure\Solution.Identity.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

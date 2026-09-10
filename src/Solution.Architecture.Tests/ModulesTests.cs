@@ -89,6 +89,7 @@ public class ModulesTests : BaseArchitecturalTests
     /// </summary>
     public static IEnumerable<object[]> GetModules() => new List<object[]>
     {
-        new object[] { "UniLeague" }
+        new object[] { "UniLeague" },
+        new object[] { "Identity" }
     };
 }
