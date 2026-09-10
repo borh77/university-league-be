@@ -9,6 +9,9 @@ COPY BuildingBlocks/Solution.BuildingBlocks.Infrastructure/Solution.BuildingBloc
 COPY Modules/UniLeague/Solution.UniLeague.API/Solution.UniLeague.API.csproj Modules/UniLeague/Solution.UniLeague.API/
 COPY Modules/UniLeague/Solution.UniLeague.Core/Solution.UniLeague.Core.csproj Modules/UniLeague/Solution.UniLeague.Core/
 COPY Modules/UniLeague/Solution.UniLeague.Infrastructure/Solution.UniLeague.Infrastructure.csproj Modules/UniLeague/Solution.UniLeague.Infrastructure/
+COPY Modules/Identity/Solution.Identity.API/Solution.Identity.API.csproj Modules/Identity/Solution.Identity.API/
+COPY Modules/Identity/Solution.Identity.Core/Solution.Identity.Core.csproj Modules/Identity/Solution.Identity.Core/
+COPY Modules/Identity/Solution.Identity.Infrastructure/Solution.Identity.Infrastructure.csproj Modules/Identity/Solution.Identity.Infrastructure/
 
 RUN dotnet restore Solution.API/Solution.API.csproj
 
