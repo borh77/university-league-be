@@ -35,6 +35,8 @@ public static class UniLeagueStartup
         services.AddScoped<ITeamService, TeamService>();
         services.AddScoped<IPlayoffService, PlayoffService>();
         services.AddScoped<ITopScorerQueryService, TopScorerQueryService>();
+        services.AddScoped<IStandingsRecalculationService, StandingsRecalculationService>();
+        services.AddScoped<IDelegateMatchService, DelegateMatchService>();
 
     }
 
@@ -43,6 +45,7 @@ public static class UniLeagueStartup
         
         services.AddScoped<IMatchRepository, MatchDbRepository>();
         services.AddScoped<ITeamRepository, TeamDbRepository>();
+        services.AddScoped<IStandingsRepository, StandingsDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(
             DbConnectionStringBuilder.Build("unileague")); 
