@@ -20,10 +20,10 @@ public class User : Entity
         if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("PasswordHash is required.");
         if (string.IsNullOrWhiteSpace(fullName)) throw new ArgumentException("FullName is required.");
 
-        Username = username;
+        Username = username.Trim();
         PasswordHash = passwordHash;
         Role = role;
-        FullName = fullName;
+        FullName = fullName.Trim();
     }
 
     public bool IsAdmin => Role == UserRole.Admin;
