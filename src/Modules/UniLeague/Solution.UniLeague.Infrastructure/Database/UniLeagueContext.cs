@@ -83,6 +83,23 @@ public class UniLeagueContext : DbContext
                    goal.Property(g => g.IsHomeTeamGoal);
                    goal.Property(g => g.Minute);
                });
+
+               // Poeni po igraču (košarka, odbojka) u zasebnoj tabeli
+               result.OwnsMany(r => r.PlayerStats, stat =>
+               {
+                   stat.ToTable("PlayerStatLines");
+
+                   stat.WithOwner().HasForeignKey("MatchId");
+                   stat.Property<long>("MatchId");
+
+                   stat.Property(p => p.PlayerId);
+                   stat.Property(p => p.PlayerName).HasMaxLength(200);
+                   stat.Property(p => p.JerseyNumber);
+                   stat.Property(p => p.IsHomeTeam);
+                   stat.Property(p => p.Points);
+
+                   stat.HasKey("MatchId", "PlayerId");
+               });
            });
 
     //    modelBuilder.Entity<Match>()
