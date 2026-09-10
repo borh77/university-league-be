@@ -2,8 +2,10 @@
 -- Pokrenuti nad 'unileague' semom posle EnsureCreated. Identity nalozi se seed-uju posebno
 -- (SeedData/identity-users.sql).
 --
--- Sadrzi po jednu ligu za sva tri sporta, dva tima po ligi sa rosterima i po jedan
--- mec bez rezultata: -100 (fudbal), -200 (kosarka), -300 (odbojka).
+-- Po jedna liga za sva tri sporta, CETIRI tima po ligi (sa redovima u tabeli na nuli),
+-- i po jedan mec bez rezultata izmedju prva dva tima: -100 (fudbal), -200 (kosarka),
+-- -300 (odbojka). Tako se posle unosa jednog meca vidi da tabela i dalje ima sva cetiri
+-- tima (dva sa nulama), i da PlayoffService ima >= 4 tima.
 
 DELETE FROM unileague."PlayerStatLines";
 DELETE FROM unileague."QuarterScores";
@@ -21,13 +23,20 @@ INSERT INTO unileague."Leagues" ("Id", "Sport", "LeagueGender") VALUES
 (-3, 'Volleyball', 'Male');
 
 INSERT INTO unileague."Teams" ("Id", "Name", "LogoUrl") VALUES
-(-10, 'FK Zvezda',    '/logos/zvezda.png'),
-(-11, 'FK Partizan',  '/logos/partizan.png'),
-(-20, 'KK Zvezda',    '/logos/zvezda.png'),
-(-21, 'KK Partizan',  '/logos/partizan.png'),
-(-30, 'OK Vojvodina', '/logos/vojvodina.png'),
-(-31, 'OK Partizan',  '/logos/partizan.png');
+(-10, 'FK Zvezda',      '/logos/zvezda.png'),
+(-11, 'FK Partizan',    '/logos/partizan.png'),
+(-12, 'FK Vojvodina',   '/logos/vojvodina.png'),
+(-13, 'FK Cukaricki',   '/logos/cukaricki.png'),
+(-20, 'KK Zvezda',      '/logos/zvezda.png'),
+(-21, 'KK Partizan',    '/logos/partizan.png'),
+(-22, 'KK Mega',        '/logos/mega.png'),
+(-23, 'KK FMP',         '/logos/fmp.png'),
+(-30, 'OK Vojvodina',   '/logos/vojvodina.png'),
+(-31, 'OK Partizan',    '/logos/partizan.png'),
+(-32, 'OK Crvena zvezda','/logos/zvezda.png'),
+(-33, 'OK Ribnica',     '/logos/ribnica.png');
 
+-- Rosteri za timove koji igraju mec (kosarka i odbojka biraju iz rostera)
 INSERT INTO unileague."Players" ("Id", "TeamId", "FirstName", "LastName", "JerseyNumber", "ImageUrl") VALUES
 (-2001, -20, 'Marko',      'Guduric',      4,  NULL),
 (-2002, -20, 'Stefan',     'Jovic',        5,  NULL),
@@ -41,6 +50,23 @@ INSERT INTO unileague."Players" ("Id", "TeamId", "FirstName", "LastName", "Jerse
 (-3101, -31, 'Drazen',     'Luburic',      9,  NULL),
 (-3102, -31, 'Neven',      'Majstorovic',  3,  NULL),
 (-3103, -31, 'Nemanja',    'Petric',       6,  NULL);
+
+-- Tabela: sva cetiri tima po ligi na nuli (recalc ih prepisuje, ali su polazni spisak)
+INSERT INTO unileague."Standings"
+    ("LeagueId", "TeamId", "TeamName", "LogoUrl", "Played", "Won", "Drawn", "Lost", "Points", "Scored", "Conceded", "SetWon", "SetLost")
+VALUES
+(-1, -10, 'FK Zvezda',       '/logos/zvezda.png',    0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-1, -11, 'FK Partizan',     '/logos/partizan.png',  0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-1, -12, 'FK Vojvodina',    '/logos/vojvodina.png', 0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-1, -13, 'FK Cukaricki',    '/logos/cukaricki.png', 0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-2, -20, 'KK Zvezda',       '/logos/zvezda.png',    0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-2, -21, 'KK Partizan',     '/logos/partizan.png',  0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-2, -22, 'KK Mega',         '/logos/mega.png',      0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-2, -23, 'KK FMP',          '/logos/fmp.png',       0, 0, 0, 0, 0, 0, 0, NULL, NULL),
+(-3, -30, 'OK Vojvodina',    '/logos/vojvodina.png', 0, 0, 0, 0, 0, 0, 0, 0, 0),
+(-3, -31, 'OK Partizan',     '/logos/partizan.png',  0, 0, 0, 0, 0, 0, 0, 0, 0),
+(-3, -32, 'OK Crvena zvezda','/logos/zvezda.png',    0, 0, 0, 0, 0, 0, 0, 0, 0),
+(-3, -33, 'OK Ribnica',      '/logos/ribnica.png',   0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 INSERT INTO unileague."Matches"
     ("Id", "LeagueId", "RoundNumber",

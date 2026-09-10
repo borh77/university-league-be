@@ -110,6 +110,52 @@ public class StandingsRecalculationServiceTests
     }
 
     [Fact]
+    public void Keeps_a_row_for_every_league_team_even_without_a_played_match()
+    {
+        var league = LeagueWith(Sport.Football,
+            Entry(1, "Alpha"), Entry(2, "Beta"), Entry(3, "Gamma"), Entry(4, "Delta"));
+
+        // odigran samo Alpha - Beta
+        var matches = new[] { FootballMatch(1, "Alpha", 2, "Beta", 2, 0) };
+
+        var captured = Recalculate(league, matches);
+
+        captured.Count.ShouldBe(4);
+        captured.Count(e => e.Played == 0).ShouldBe(2);
+
+        captured.Single(e => e.TeamName == "Alpha").Points.ShouldBe(3);
+        captured.Single(e => e.TeamName == "Beta").Played.ShouldBe(1);
+
+        var gamma = captured.Single(e => e.TeamName == "Gamma");
+        gamma.Played.ShouldBe(0);
+        gamma.Won.ShouldBe(0);
+        gamma.Points.ShouldBe(0);
+        gamma.Scored.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Carries_team_name_and_logo_for_teams_without_a_played_match()
+    {
+        var league = LeagueWith(Sport.Football,
+            Entry(1, "Alpha", "/logos/alpha.png"),
+            Entry(2, "Beta", "/logos/beta.png"),
+            Entry(3, "Gamma", "/logos/gamma.png"),
+            Entry(4, "Delta", "/logos/delta.png"));
+
+        var matches = new[] { FootballMatch(1, "Alpha", 2, "Beta", 1, 1) };
+
+        var captured = Recalculate(league, matches);
+
+        var gamma = captured.Single(e => e.TeamId == 3);
+        gamma.TeamName.ShouldBe("Gamma");
+        gamma.LogoUrl.ShouldBe("/logos/gamma.png");
+
+        var delta = captured.Single(e => e.TeamId == 4);
+        delta.TeamName.ShouldBe("Delta");
+        delta.LogoUrl.ShouldBe("/logos/delta.png");
+    }
+
+    [Fact]
     public void Throws_not_found_when_league_missing()
     {
         var leagueRepo = new Mock<ILeagueRepository>();
@@ -127,7 +173,15 @@ public class StandingsRecalculationServiceTests
 
     private static List<StandingEntry> Recalculate(Sport sport, IReadOnlyList<Match> matches)
     {
-        var (leagueRepo, matchRepo) = Repos(sport, matches);
+        var league = sport == Sport.Volleyball
+            ? new League(Sport.Volleyball, Gender.Male)
+            : new League(sport);
+        return Recalculate(league, matches);
+    }
+
+    private static List<StandingEntry> Recalculate(League league, IReadOnlyList<Match> matches)
+    {
+        var (leagueRepo, matchRepo) = Repos(league, matches);
         var standingsRepo = new Mock<IStandingsRepository>();
         IReadOnlyCollection<StandingEntry> captured = Array.Empty<StandingEntry>();
         standingsRepo
@@ -146,7 +200,12 @@ public class StandingsRecalculationServiceTests
         var league = sport == Sport.Volleyball
             ? new League(Sport.Volleyball, Gender.Male)
             : new League(sport);
+        return Repos(league, matches);
+    }
 
+    private static (Mock<ILeagueRepository>, Mock<IMatchRepository>) Repos(
+        League league, IReadOnlyList<Match> matches)
+    {
         var leagueRepo = new Mock<ILeagueRepository>();
         leagueRepo.Setup(r => r.GetByIdWithStandings(LeagueId)).Returns(league);
 
@@ -155,6 +214,22 @@ public class StandingsRecalculationServiceTests
 
         return (leagueRepo, matchRepo);
     }
+
+    private static League LeagueWith(Sport sport, params StandingEntry[] entries)
+    {
+        var league = sport == Sport.Volleyball
+            ? new League(Sport.Volleyball, Gender.Male)
+            : new League(sport);
+
+        var field = typeof(League).GetField("_standings",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        ((List<StandingEntry>)field!.GetValue(league)!).AddRange(entries);
+
+        return league;
+    }
+
+    private static StandingEntry Entry(int teamId, string teamName, string? logoUrl = null)
+        => new(LeagueId, teamId, teamName, logoUrl, 0, 0, 0, 0, 0, 0, 0);
 
     private static string Serialize(IReadOnlyCollection<StandingEntry> entries)
         => string.Join("\n", entries

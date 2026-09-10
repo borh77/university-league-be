@@ -31,6 +31,10 @@ public class StandingsRecalculationService : IStandingsRecalculationService
 
         var rows = new Dictionary<long, Row>();
 
+        // Spisak timova u ligi je polazna tačka - tim koji još nije igrao ostaje u tabeli sa nulama
+        foreach (var team in league.Standings)
+            rows[team.TeamId] = new Row(team.TeamId, team.TeamName, team.LogoUrl);
+
         Row RowFor(long teamId, string teamName, string? logoUrl)
         {
             if (!rows.TryGetValue(teamId, out var row))
