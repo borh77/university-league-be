@@ -18,6 +18,7 @@ public class UniLeagueProfile : Profile
         CreateMap<QuarterScore, QuarterScoreDto>();
         CreateMap<SetScore, SetScoreDto>();
         CreateMap<GoalEvent, GoalEventDto>();
+        CreateMap<PlayerStatLine, PlayerStatLineDto>();
 
         CreateMap<Match, MatchDto>()
      .ForMember(dest => dest.Result,

@@ -14,6 +14,9 @@ public interface IMatchRepository
     public PagedResult<Match> GetScheduleByLeague(long leagueId);
     public PagedResult<Match> GetResultsByLeague(long leagueId);
 
+    public Match? GetByIdWithResult(long matchId);
+    public void SaveResult(Match match);
+
     public List<Match> GetAllPlayedByLeague(long leagueId);
     public List<Match> GetRegularSeasonMatchesByLeague(long leagueId);
     public List<Match> GetPlayoffMatchesByLeague(long leagueId);

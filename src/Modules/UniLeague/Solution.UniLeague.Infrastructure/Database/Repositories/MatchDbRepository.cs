@@ -46,6 +46,25 @@ public class MatchDbRepository : IMatchRepository
         return task.Result;
     }
 
+    public Match? GetByIdWithResult(long matchId)
+    {
+        return _dbContext.Matches
+            .Include("Result.Quarters")
+            .Include("Result.Sets")
+            .Include("Result.Goals")
+            .Include("Result.PlayerStats")
+            .FirstOrDefault(m => m.Id == matchId);
+    }
+
+    public void SaveResult(Match match)
+    {
+        // match je vec praćen iz GetByIdWithResult; zamena owned Result-a se detektuje sama
+        if (_dbContext.Entry(match).State == EntityState.Detached)
+            _dbContext.Matches.Update(match);
+
+        _dbContext.SaveChanges();
+    }
+
     public List<Match> GetAllPlayedByLeague(long leagueId)
     {
         return _dbContext.Matches
