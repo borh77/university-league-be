@@ -1,10 +1,8 @@
 -- Seed nalozi za Identity modul.
--- Lozinke (BCrypt hash-evi generisani lokalno):
---   admin   / admin123
---   delegat / delegat123
+-- BCrypt hash-evi generisani lokalno; lozinke su dokumentovane u opisu PR-a, ne ovde.
 
 INSERT INTO identity."Users"
     ("Id", "Username", "PasswordHash", "Role", "FullName", "IsActive")
 VALUES
-(-1, 'admin',   '$2a$11$CtDF4kggiFNYnz5lAe/RR.dGfv8fARbdD5Gvh2izB5QAVx9d/w1Tm', 'Admin',    'Administrator lige', TRUE),
-(-2, 'delegat', '$2a$11$uD4s5y1nLf93hns9l6Q1Fus.ggWihxa1ImB.VXCwB7LqZZ1xSR6i.', 'Delegate', 'Delegat na terenu',  TRUE);
+(-1, 'admin',   '$2a$11$HZmQkk/MKJ.9BJj9yWPTb.Y40W7kAsS2BJcGNthslucwXgY6qjGx2', 'Admin',    'Administrator lige', TRUE),
+(-2, 'delegat', '$2a$11$8I8o9364Cd.9W1cv/Tz2dOQQakCzg8rYfznfKm8p1DqDTbuxZh.tG', 'Delegate', 'Delegat na terenu',  TRUE);
