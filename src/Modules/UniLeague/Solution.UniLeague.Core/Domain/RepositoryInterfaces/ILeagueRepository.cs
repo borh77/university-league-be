@@ -10,4 +10,5 @@ public interface ILeagueRepository
     /// </summary>
     League? GetBySportAndGenderWithStandings(Sport sport, Gender? gender);
     League? GetByIdWithStandings(long leagueId);
+    List<League> GetAll();
 }

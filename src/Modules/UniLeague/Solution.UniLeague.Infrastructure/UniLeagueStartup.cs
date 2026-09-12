@@ -36,7 +36,10 @@ public static class UniLeagueStartup
         services.AddScoped<IPlayoffService, PlayoffService>();
         services.AddScoped<ITopScorerQueryService, TopScorerQueryService>();
         services.AddScoped<IStandingsRecalculationService, StandingsRecalculationService>();
+        services.AddScoped<IMatchResultBuilder, MatchResultBuilder>();
         services.AddScoped<IDelegateMatchService, DelegateMatchService>();
+        services.AddScoped<IAdminMatchService, AdminMatchService>();
+        services.AddScoped<IAdminLeagueService, AdminLeagueService>();
 
     }
 

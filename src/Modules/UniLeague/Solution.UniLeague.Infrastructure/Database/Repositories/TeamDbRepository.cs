@@ -25,4 +25,9 @@ public class TeamDbRepository : ITeamRepository
 
         return team;
     }
+
+    public List<Team> GetAll()
+    {
+        return _dbContext.Teams.ToList();
+    }
 }
