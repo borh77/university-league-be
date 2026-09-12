@@ -56,6 +56,9 @@ public class AdminMatchService : IAdminMatchService
         var match = _matchRepository.GetByIdWithResult(matchId)
             ?? throw new NotFoundException($"Match with id {matchId} was not found.");
 
+        if (request.HomeTeamId.HasValue != request.AwayTeamId.HasValue)
+            throw new ArgumentException("HomeTeamId and AwayTeamId must both be provided or both omitted.");
+
         if (request.ScheduledAt is { } scheduledAt)
             match.Reschedule(scheduledAt);
 
@@ -96,10 +99,11 @@ public class AdminMatchService : IAdminMatchService
         var league = _leagueRepository.GetByIdWithStandings(match.LeagueId)
             ?? throw new NotFoundException($"League with id {match.LeagueId} was not found.");
 
+        // Build pre HandlePlayoffDesync - los DTO ne sme da obrise plej-of pre nego sto se odbije zahtev
+        var result = _matchResultBuilder.Build(league.Sport, match, request);
+
         if (match.Stage == MatchStage.RegularSeason)
             HandlePlayoffDesync(match.LeagueId);
-
-        var result = _matchResultBuilder.Build(league.Sport, match, request);
 
         match.SetResult(result);
         _matchRepository.Save(match);
