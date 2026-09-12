@@ -9,6 +9,14 @@ using Solution.UniLeague.Infrastructure.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Van Development okruzenja JWT_KEY mora biti eksplicitno postavljen - fallback iz
+// JwtSettingsBuilder je javna vrednost u repou i ne sme da potpisuje produkcione tokene
+if (!builder.Environment.IsDevelopment() && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_KEY")))
+{
+    throw new InvalidOperationException(
+        "JWT_KEY environment variable must be set when ASPNETCORE_ENVIRONMENT is not Development.");
+}
+
 builder.Services.AddControllers();
 builder.Services.ConfigureSwagger(builder.Configuration);
 const string corsPolicy = "_corsPolicy";
