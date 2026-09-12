@@ -60,6 +60,29 @@ public class AdminMatchServiceTests
     }
 
     [Fact]
+    public void UpdateMatch_rejects_partial_team_change()
+    {
+        var match = CreateMatch(1, 10, "A", 20, "B");
+
+        var leagueRepo = new Mock<ILeagueRepository>();
+        var matchRepo = new Mock<IMatchRepository>();
+        matchRepo.Setup(r => r.GetByIdWithResult(match.Id)).Returns(match);
+
+        var adminService = new AdminMatchService(
+            matchRepo.Object,
+            leagueRepo.Object,
+            new Mock<ITeamRepository>().Object,
+            new Mock<IStandingsRecalculationService>().Object,
+            new MatchResultBuilder(new Mock<ITeamRepository>().Object));
+
+        Should.Throw<ArgumentException>(() =>
+            adminService.UpdateMatch(match.Id, new UpdateMatchDto { HomeTeamId = 99 }));
+
+        match.HomeTeamId.ShouldBe(10L);
+        matchRepo.Verify(r => r.Save(It.IsAny<Match>()), Times.Never);
+    }
+
+    [Fact]
     public void UpdateResult_rejects_regular_season_edit_when_playoff_matches_already_have_results()
     {
         var regularMatch = CreateMatch(1, 10, "A", 20, "B");
@@ -118,6 +141,48 @@ public class AdminMatchServiceTests
             Times.Once);
         matchRepo.Verify(r => r.Save(regularMatch), Times.Once);
         standingsRecalculation.Verify(r => r.Recalculate(LeagueId), Times.Once);
+    }
+
+    [Fact]
+    public void UpdateResult_rejects_invalid_dto_without_touching_unplayed_playoff_matches()
+    {
+        var regularMatch = CreateMatch(1, 10, "A", 20, "B");
+        var semifinal1 = CreatePlayoffMatch(2, hasResult: false);
+        var semifinal2 = CreatePlayoffMatch(3, hasResult: false);
+
+        var leagueRepo = new Mock<ILeagueRepository>();
+        leagueRepo.Setup(r => r.GetByIdWithStandings(LeagueId)).Returns(CreateLeague());
+
+        var matchRepo = new Mock<IMatchRepository>();
+        matchRepo.Setup(r => r.GetByIdWithResult(regularMatch.Id)).Returns(regularMatch);
+        matchRepo.Setup(r => r.GetPlayoffMatchesByLeague(LeagueId))
+            .Returns(new List<Match> { semifinal1, semifinal2 });
+
+        var standingsRecalculation = new Mock<IStandingsRecalculationService>();
+        var adminService = new AdminMatchService(
+            matchRepo.Object,
+            leagueRepo.Object,
+            new Mock<ITeamRepository>().Object,
+            standingsRecalculation.Object,
+            new MatchResultBuilder(new Mock<ITeamRepository>().Object));
+
+        // Golovi ne odgovaraju unetom rezultatu - MatchResultBuilder mora da pukne pre brisanja plej-ofa
+        var invalidRequest = new SubmitMatchResultDto
+        {
+            HomeScore = 2,
+            AwayScore = 1,
+            Goals = new List<GoalEventDto>
+            {
+                new() { ScorerName = "Igrac", TeamName = "A", IsHomeTeamGoal = true, Minute = 10 }
+            }
+        };
+
+        Should.Throw<ArgumentException>(() => adminService.UpdateResult(regularMatch.Id, invalidRequest));
+
+        matchRepo.Verify(r => r.DeleteRange(It.IsAny<IReadOnlyCollection<Match>>()), Times.Never);
+        matchRepo.Verify(r => r.Save(It.IsAny<Match>()), Times.Never);
+        standingsRecalculation.Verify(r => r.Recalculate(It.IsAny<long>()), Times.Never);
+        regularMatch.HasResult.ShouldBeFalse();
     }
 
     private static League CreateLeague()
