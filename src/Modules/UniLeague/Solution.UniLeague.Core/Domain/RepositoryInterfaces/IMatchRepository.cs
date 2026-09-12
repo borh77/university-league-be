@@ -17,6 +17,11 @@ public interface IMatchRepository
     public Match? GetByIdWithResult(long matchId);
     public void SaveResult(Match match);
 
+    public void Add(Match match);
+    public void Save(Match match);
+    public void Delete(Match match);
+    public void DeleteRange(IReadOnlyCollection<Match> matches);
+
     public List<Match> GetAllPlayedByLeague(long leagueId);
     public List<Match> GetRegularSeasonMatchesByLeague(long leagueId);
     public List<Match> GetPlayoffMatchesByLeague(long leagueId);

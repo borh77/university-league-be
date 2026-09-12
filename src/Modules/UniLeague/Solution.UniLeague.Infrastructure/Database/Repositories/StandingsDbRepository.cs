@@ -28,4 +28,10 @@ public class StandingsDbRepository : IStandingsRepository
 
         transaction.Commit();
     }
+
+    public void Add(StandingEntry entry)
+    {
+        _dbContext.StandingEntries.Add(entry);
+        _dbContext.SaveChanges();
+    }
 }

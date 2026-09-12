@@ -31,4 +31,9 @@ public class LeagueDbRepository : ILeagueRepository
             .Include(l => l.Standings)
             .FirstOrDefault(l => l.Id == leagueId);
     }
+
+    public List<League> GetAll()
+    {
+        return _context.Leagues.ToList();
+    }
 }

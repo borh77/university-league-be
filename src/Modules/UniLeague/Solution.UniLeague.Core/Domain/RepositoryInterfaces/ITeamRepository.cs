@@ -3,4 +3,5 @@
 public interface ITeamRepository
 {
     public Team GetByIdWithPlayers(long teamId);
+    public List<Team> GetAll();
 }

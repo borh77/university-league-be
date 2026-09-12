@@ -65,6 +65,35 @@ public class MatchDbRepository : IMatchRepository
         _dbContext.SaveChanges();
     }
 
+    public void Add(Match match)
+    {
+        _dbContext.Matches.Add(match);
+        _dbContext.SaveChanges();
+    }
+
+    public void Save(Match match)
+    {
+        if (_dbContext.Entry(match).State == EntityState.Detached)
+            _dbContext.Matches.Update(match);
+
+        _dbContext.SaveChanges();
+    }
+
+    public void Delete(Match match)
+    {
+        _dbContext.Matches.Remove(match);
+        _dbContext.SaveChanges();
+    }
+
+    public void DeleteRange(IReadOnlyCollection<Match> matches)
+    {
+        if (matches.Count == 0)
+            return;
+
+        _dbContext.Matches.RemoveRange(matches);
+        _dbContext.SaveChanges();
+    }
+
     public List<Match> GetAllPlayedByLeague(long leagueId)
     {
         return _dbContext.Matches

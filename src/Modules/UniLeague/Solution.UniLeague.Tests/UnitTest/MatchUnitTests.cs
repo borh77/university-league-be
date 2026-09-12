@@ -225,4 +225,111 @@ public class MatchTests
 
         Should.Throw<ArgumentNullException>(() => match.SetResult(null!));
     }
+
+    [Fact]
+    public void Reschedule_changes_scheduled_at()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            new DateTime(2026, 1, 1, 18, 0, 0));
+
+        match.Reschedule(new DateTime(2026, 2, 1, 20, 0, 0));
+
+        match.ScheduledAt.ShouldBe(new DateTime(2026, 2, 1, 20, 0, 0));
+    }
+
+    [Fact]
+    public void Reschedule_works_for_playoff_match()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            new DateTime(2026, 1, 1, 18, 0, 0),
+            MatchStage.PlayoffFinal,
+            1, 2);
+
+        match.Reschedule(new DateTime(2026, 3, 1, 20, 0, 0));
+
+        match.ScheduledAt.ShouldBe(new DateTime(2026, 3, 1, 20, 0, 0));
+    }
+
+    [Fact]
+    public void ClearResult_removes_the_result()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now);
+        match.SetResult(MatchResult.Create(2, 1));
+
+        match.ClearResult();
+
+        match.HasResult.ShouldBeFalse();
+        match.Result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void SetTeams_changes_teams_when_match_has_no_result()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now);
+
+        match.SetTeams(20L, "Vojvodina", "/logos/vojvodina.png", 21L, "Radnicki", "/logos/radnicki.png");
+
+        match.HomeTeamId.ShouldBe(20L);
+        match.HomeTeamName.ShouldBe("Vojvodina");
+        match.HomeTeamLogoUrl.ShouldBe("/logos/vojvodina.png");
+        match.AwayTeamId.ShouldBe(21L);
+        match.AwayTeamName.ShouldBe("Radnicki");
+        match.AwayTeamLogoUrl.ShouldBe("/logos/radnicki.png");
+    }
+
+    [Fact]
+    public void SetTeams_throws_when_match_already_has_a_result()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now);
+        match.SetResult(MatchResult.Create(2, 1));
+
+        Should.Throw<ArgumentException>(() =>
+            match.SetTeams(20L, "Vojvodina", "/logos/vojvodina.png", 21L, "Radnicki", "/logos/radnicki.png"));
+    }
+
+    [Fact]
+    public void SetTeams_throws_for_playoff_match()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now,
+            MatchStage.PlayoffSemifinal,
+            1, 2);
+
+        Should.Throw<ArgumentException>(() =>
+            match.SetTeams(20L, "Vojvodina", "/logos/vojvodina.png", 21L, "Radnicki", "/logos/radnicki.png"));
+    }
+
+    [Fact]
+    public void SetTeams_throws_when_home_and_away_are_the_same_team()
+    {
+        var match = new Match(
+            1L, 1,
+            10L, "Crvena zvezda", "/logos/zvezda.png",
+            11L, "Partizan", "/logos/partizan.png",
+            DateTime.Now);
+
+        Should.Throw<ArgumentException>(() =>
+            match.SetTeams(20L, "Vojvodina", "/logos/vojvodina.png", 20L, "Vojvodina", "/logos/vojvodina.png"));
+    }
 }
