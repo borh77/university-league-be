@@ -111,9 +111,10 @@ public class TopScorerServiceTests
     private static LeagueService CreateService(ITopScorerQueryService topScorerQueryService)
     {
         var repoMock = new Mock<IMatchRepository>();
+        var leagueRepoMock = new Mock<Solution.UniLeague.Core.RepositoryInterfaces.ILeagueRepository>();
         var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
             .CreateMapper();
         var playoffService = new Mock<IPlayoffService>();
-        return new LeagueService(repoMock.Object, mapper, topScorerQueryService, playoffService.Object); 
+        return new LeagueService(repoMock.Object, leagueRepoMock.Object, mapper, topScorerQueryService, playoffService.Object);
     }
 }
