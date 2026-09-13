@@ -11,4 +11,7 @@ public interface ILeagueRepository
     League? GetBySportAndGenderWithStandings(Sport sport, Gender? gender);
     League? GetByIdWithStandings(long leagueId);
     List<League> GetAll();
+
+    // Sport lige u kojoj tim vec ima red u tabeli (izuzev prosledjene lige), null ako ga nema nigde
+    Sport? GetSportForTeam(int teamId, long excludingLeagueId);
 }

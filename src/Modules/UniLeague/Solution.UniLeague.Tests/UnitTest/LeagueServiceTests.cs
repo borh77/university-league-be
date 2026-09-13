@@ -407,15 +407,37 @@ public class LeagueServiceTests
         result[0].Quarters.ShouldNotBeNull();
     }
 
+    [Fact]
+    public void GetAllLeagues_maps_sport_and_gender_to_lowercase()
+    {
+        var leagues = new List<League>
+        {
+            new League(Sport.Football),
+            new League(Sport.Volleyball, Gender.Female),
+        };
+
+        var leagueRepo = new Mock<Solution.UniLeague.Core.RepositoryInterfaces.ILeagueRepository>();
+        leagueRepo.Setup(r => r.GetAll()).Returns(leagues);
+
+        var result = CreateService(new Mock<IMatchRepository>(), leagueRepo).GetAllLeagues();
+
+        result.Count.ShouldBe(2);
+        result[0].Sport.ShouldBe("football");
+        result[0].Gender.ShouldBeNull();
+        result[1].Sport.ShouldBe("volleyball");
+        result[1].Gender.ShouldBe("female");
+    }
+
     //Helper
 
-    private static LeagueService CreateService(Mock<IMatchRepository> repo)
+    private static LeagueService CreateService(Mock<IMatchRepository> repo, Mock<Solution.UniLeague.Core.RepositoryInterfaces.ILeagueRepository>? leagueRepo = null)
     {
         var mapper = new MapperConfiguration(cfg => cfg.AddProfile<UniLeagueProfile>())
             .CreateMapper();
         var topScorerQueryService = new Mock<ITopScorerQueryService>();
         var playoffService = new Mock<IPlayoffService>();
-        return new LeagueService(repo.Object, mapper, topScorerQueryService.Object, playoffService.Object); 
+        leagueRepo ??= new Mock<Solution.UniLeague.Core.RepositoryInterfaces.ILeagueRepository>();
+        return new LeagueService(repo.Object, leagueRepo.Object, mapper, topScorerQueryService.Object, playoffService.Object);
     }
 
     private static Solution.UniLeague.Core.Domain.Match CreateMatch(long id, long leagueId, int roundNumber,

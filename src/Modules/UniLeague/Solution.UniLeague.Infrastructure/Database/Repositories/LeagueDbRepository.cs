@@ -36,4 +36,12 @@ public class LeagueDbRepository : ILeagueRepository
     {
         return _context.Leagues.ToList();
     }
+
+    public Sport? GetSportForTeam(int teamId, long excludingLeagueId)
+    {
+        return _context.StandingEntries
+            .Where(s => s.TeamId == teamId && s.LeagueId != excludingLeagueId)
+            .Join(_context.Leagues, s => s.LeagueId, l => l.Id, (s, l) => (Sport?)l.Sport)
+            .FirstOrDefault();
+    }
 }

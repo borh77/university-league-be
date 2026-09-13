@@ -2,26 +2,42 @@
 using Solution.UniLeague.API.Dtos;
 using Solution.UniLeague.API.Public;
 using Solution.UniLeague.Core.Domain.RepositoryInterfaces;
+using Solution.UniLeague.Core.RepositoryInterfaces;
 
 namespace Solution.UniLeague.Core.UseCases;
 
 public class LeagueService : ILeagueService
 {
     private readonly IMatchRepository _matchRepository;
+    private readonly ILeagueRepository _leagueRepository;
     private readonly IMapper _mapper;
     private readonly ITopScorerQueryService _topScorerQueryService;
     private readonly IPlayoffService _playoffService;
 
     public LeagueService(
         IMatchRepository matchRepository,
+        ILeagueRepository leagueRepository,
         IMapper mapper,
         ITopScorerQueryService topScorerQueryService,
         IPlayoffService playoffService)
     {
         _matchRepository = matchRepository;
+        _leagueRepository = leagueRepository;
         _mapper = mapper;
         _topScorerQueryService = topScorerQueryService;
         _playoffService = playoffService;
+    }
+
+    public List<PublicLeagueDto> GetAllLeagues()
+    {
+        return _leagueRepository.GetAll()
+            .Select(l => new PublicLeagueDto
+            {
+                Id = l.Id,
+                Sport = l.Sport.ToString().ToLowerInvariant(),
+                Gender = l.LeagueGender?.ToString().ToLowerInvariant()
+            })
+            .ToList();
     }
 
     public List<MatchDto> GetScheduleByLeague(long leagueId)

@@ -61,6 +61,11 @@ public class AdminLeagueService : IAdminLeagueService
         if (league.Standings.Any(s => s.TeamId == (int)teamId))
             return;
 
+        var existingSport = _leagueRepository.GetSportForTeam((int)teamId, leagueId);
+        if (existingSport.HasValue && existingSport.Value != league.Sport)
+            throw new ArgumentException(
+                $"Team already competes in a {existingSport.Value} league and cannot be added to a {league.Sport} league.");
+
         var team = _teamRepository.GetByIdWithPlayers(teamId);
 
         _standingsRepository.Add(new StandingEntry(
