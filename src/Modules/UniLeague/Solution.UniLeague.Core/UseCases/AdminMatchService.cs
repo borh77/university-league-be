@@ -14,19 +14,22 @@ public class AdminMatchService : IAdminMatchService
     private readonly ITeamRepository _teamRepository;
     private readonly IStandingsRecalculationService _standingsRecalculation;
     private readonly IMatchResultBuilder _matchResultBuilder;
+    private readonly IPlayoffService _playoffService;
 
     public AdminMatchService(
         IMatchRepository matchRepository,
         ILeagueRepository leagueRepository,
         ITeamRepository teamRepository,
         IStandingsRecalculationService standingsRecalculation,
-        IMatchResultBuilder matchResultBuilder)
+        IMatchResultBuilder matchResultBuilder,
+        IPlayoffService playoffService)
     {
         _matchRepository = matchRepository;
         _leagueRepository = leagueRepository;
         _teamRepository = teamRepository;
         _standingsRecalculation = standingsRecalculation;
         _matchResultBuilder = matchResultBuilder;
+        _playoffService = playoffService;
     }
 
     public AdminMatchDto ScheduleMatch(long leagueId, ScheduleMatchDto request)
@@ -99,11 +102,11 @@ public class AdminMatchService : IAdminMatchService
         var league = _leagueRepository.GetByIdWithStandings(match.LeagueId)
             ?? throw new NotFoundException($"League with id {match.LeagueId} was not found.");
 
-        // Build pre HandlePlayoffDesync - los DTO ne sme da obrise plej-of pre nego sto se odbije zahtev
+        // Build pre HandleRegularSeasonResultChanged - los DTO ne sme da obrise plej-of pre nego sto se odbije zahtev
         var result = _matchResultBuilder.Build(league.Sport, match, request);
 
         if (match.Stage == MatchStage.RegularSeason)
-            HandlePlayoffDesync(match.LeagueId);
+            _playoffService.HandleRegularSeasonResultChanged(match.LeagueId);
 
         match.SetResult(result);
         _matchRepository.Save(match);
@@ -117,29 +120,12 @@ public class AdminMatchService : IAdminMatchService
             ?? throw new NotFoundException($"Match with id {matchId} was not found.");
 
         if (match.Stage == MatchStage.RegularSeason)
-            HandlePlayoffDesync(match.LeagueId);
+            _playoffService.HandleRegularSeasonResultChanged(match.LeagueId);
 
         match.ClearResult();
         _matchRepository.Save(match);
 
         _standingsRecalculation.Recalculate(match.LeagueId);
-    }
-
-    // Plej-of se generise iz regularne tabele - ako se ta tabela menja posle generisanja,
-    // vec generisan plej-of vise ne odgovara ispravljenom plasmanu
-    private void HandlePlayoffDesync(long leagueId)
-    {
-        var playoffMatches = _matchRepository.GetPlayoffMatchesByLeague(leagueId);
-        if (playoffMatches.Count == 0)
-            return;
-
-        if (playoffMatches.Any(m => m.HasResult))
-            throw new ArgumentException(
-                "Cannot change a regular season result while playoff matches already have recorded results.");
-
-        // Nijedan plej-of mec jos nema rezultat - brisemo ih, PlayoffService ce ih
-        // ponovo generisati iz ispravljene tabele pri sledecem citanju
-        _matchRepository.DeleteRange(playoffMatches);
     }
 
     private static void EnsureTeamsInLeague(League league, long homeTeamId, long awayTeamId)

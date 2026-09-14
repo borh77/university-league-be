@@ -266,6 +266,56 @@ public class PlayoffServiceTests
             Times.Never);
     }
 
+    [Fact]
+    public void HandleRegularSeasonResultChanged_does_nothing_when_no_playoff_matches_exist()
+    {
+        var league = CreateLeagueWithStandings();
+        var matchRepo = CreateMatchRepo(league.Id, CreateCompletedRegularSeason());
+        var service = CreateService(league, matchRepo);
+
+        service.HandleRegularSeasonResultChanged(league.Id);
+
+        matchRepo.Verify(r => r.DeleteRange(It.IsAny<IReadOnlyCollection<Match>>()), Times.Never);
+    }
+
+    [Fact]
+    public void HandleRegularSeasonResultChanged_deletes_unplayed_playoff_matches_so_they_regenerate_from_the_corrected_table()
+    {
+        var league = CreateLeagueWithStandings();
+        var semifinals = CreateSemifinals(firstHasResult: false, secondHasResult: false);
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: semifinals);
+        var service = CreateService(league, matchRepo);
+
+        service.HandleRegularSeasonResultChanged(league.Id);
+
+        matchRepo.Verify(
+            r => r.DeleteRange(It.Is<IReadOnlyCollection<Match>>(m => m.Count == 2)),
+            Times.Once);
+    }
+
+    [Fact]
+    public void HandleRegularSeasonResultChanged_leaves_playoff_bracket_untouched_once_a_playoff_match_has_a_result()
+    {
+        // Zreb je istorijska cinjenica u trenutku generisanja - kasnija ispravka regularnog
+        // rezultata ne sme da obrise parove koji se vec igraju
+        var league = CreateLeagueWithStandings();
+        var semifinals = CreateSemifinals(firstHasResult: true, secondHasResult: false);
+        var matchRepo = CreateMatchRepo(
+            league.Id,
+            CreateCompletedRegularSeason(),
+            hasPlayoffs: true,
+            playoffMatches: semifinals);
+        var service = CreateService(league, matchRepo);
+
+        service.HandleRegularSeasonResultChanged(league.Id);
+
+        matchRepo.Verify(r => r.DeleteRange(It.IsAny<IReadOnlyCollection<Match>>()), Times.Never);
+    }
+
     private static PlayoffService CreateService(League league, Mock<IMatchRepository> matchRepo)
     {
         var leagueRepo = new Mock<ILeagueRepository>();
