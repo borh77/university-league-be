@@ -74,4 +74,43 @@ public class AdminLeagueServiceTests
 
         standingsRepo.Verify(r => r.Add(It.IsAny<StandingEntry>()), Times.Once);
     }
+
+    [Fact]
+    public void GetAllTeams_fills_in_the_sport_a_team_already_plays()
+    {
+        var team = new Team("Blue Eagles", "/logos/blue-eagles.png");
+        typeof(Team).BaseType!.GetProperty("Id")!.SetValue(team, TeamId);
+
+        var leagueRepo = new Mock<ILeagueRepository>();
+        leagueRepo.Setup(r => r.GetSportsByTeam())
+            .Returns(new Dictionary<int, Sport> { [(int)TeamId] = Sport.Football });
+
+        var teamRepo = new Mock<ITeamRepository>();
+        teamRepo.Setup(r => r.GetAll()).Returns(new List<Team> { team });
+
+        var service = new AdminLeagueService(leagueRepo.Object, teamRepo.Object, new Mock<IStandingsRepository>().Object);
+
+        var result = service.GetAllTeams();
+
+        result.Single().Sport.ShouldBe("Football");
+    }
+
+    [Fact]
+    public void GetAllTeams_leaves_sport_empty_for_a_team_that_plays_nowhere()
+    {
+        var team = new Team("Blue Eagles", "/logos/blue-eagles.png");
+        typeof(Team).BaseType!.GetProperty("Id")!.SetValue(team, TeamId);
+
+        var leagueRepo = new Mock<ILeagueRepository>();
+        leagueRepo.Setup(r => r.GetSportsByTeam()).Returns(new Dictionary<int, Sport>());
+
+        var teamRepo = new Mock<ITeamRepository>();
+        teamRepo.Setup(r => r.GetAll()).Returns(new List<Team> { team });
+
+        var service = new AdminLeagueService(leagueRepo.Object, teamRepo.Object, new Mock<IStandingsRepository>().Object);
+
+        var result = service.GetAllTeams();
+
+        result.Single().Sport.ShouldBeNull();
+    }
 }
