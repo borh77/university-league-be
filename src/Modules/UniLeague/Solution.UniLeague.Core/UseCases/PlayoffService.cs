@@ -21,6 +21,22 @@ public class PlayoffService : IPlayoffService
         EnsureFinalAndThirdPlaceGenerated(leagueId);
     }
 
+    // Plej-of se generise iz regularne tabele, ali zreb je istorijska cinjenica u trenutku generisanja.
+    // Ako plej-of mecevi jos nemaju rezultat - nisu se igrali, brisemo ih pa se ponovo generisu iz
+    // ispravljene tabele. Ako vec imaju rezultat - vec se igraju, zreb ostaje netaknut, samo se
+    // regularna tabela ispravlja (StandingsRecalculationService to radi posle ovog poziva).
+    public void HandleRegularSeasonResultChanged(long leagueId)
+    {
+        var playoffMatches = _matchRepository.GetPlayoffMatchesByLeague(leagueId);
+        if (playoffMatches.Count == 0)
+            return;
+
+        if (playoffMatches.Any(m => m.HasResult))
+            return;
+
+        _matchRepository.DeleteRange(playoffMatches);
+    }
+
     private void EnsureSemifinalsGenerated(long leagueId)
     {
         if (_matchRepository.HasPlayoffSemifinals(leagueId))

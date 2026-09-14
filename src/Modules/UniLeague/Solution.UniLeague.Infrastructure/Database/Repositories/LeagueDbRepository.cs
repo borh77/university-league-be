@@ -44,4 +44,13 @@ public class LeagueDbRepository : ILeagueRepository
             .Join(_context.Leagues, s => s.LeagueId, l => l.Id, (s, l) => (Sport?)l.Sport)
             .FirstOrDefault();
     }
+
+    public Dictionary<int, Sport> GetSportsByTeam()
+    {
+        return _context.StandingEntries
+            .Join(_context.Leagues, s => s.LeagueId, l => l.Id, (s, l) => new { s.TeamId, l.Sport })
+            .AsEnumerable()
+            .GroupBy(x => x.TeamId)
+            .ToDictionary(g => g.Key, g => g.First().Sport);
+    }
 }

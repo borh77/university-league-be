@@ -14,4 +14,7 @@ public interface ILeagueRepository
 
     // Sport lige u kojoj tim vec ima red u tabeli (izuzev prosledjene lige), null ako ga nema nigde
     Sport? GetSportForTeam(int teamId, long excludingLeagueId);
+
+    // Sport po timu, za sve timove koji vec igraju u nekoj ligi
+    Dictionary<int, Sport> GetSportsByTeam();
 }

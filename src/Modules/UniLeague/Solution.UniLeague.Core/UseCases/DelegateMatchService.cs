@@ -16,6 +16,7 @@ public class DelegateMatchService : IDelegateMatchService
     private readonly IStandingsRecalculationService _standingsRecalculation;
     private readonly IMatchResultBuilder _matchResultBuilder;
     private readonly IMapper _mapper;
+    private readonly IPlayoffService _playoffService;
 
     public DelegateMatchService(
         IMatchRepository matchRepository,
@@ -23,7 +24,8 @@ public class DelegateMatchService : IDelegateMatchService
         ITeamRepository teamRepository,
         IStandingsRecalculationService standingsRecalculation,
         IMatchResultBuilder matchResultBuilder,
-        IMapper mapper)
+        IMapper mapper,
+        IPlayoffService playoffService)
     {
         _matchRepository = matchRepository;
         _leagueRepository = leagueRepository;
@@ -31,6 +33,7 @@ public class DelegateMatchService : IDelegateMatchService
         _standingsRecalculation = standingsRecalculation;
         _matchResultBuilder = matchResultBuilder;
         _mapper = mapper;
+        _playoffService = playoffService;
     }
 
     public DelegateMatchDto GetMatchForEntry(long matchId)
@@ -87,6 +90,9 @@ public class DelegateMatchService : IDelegateMatchService
             ?? throw new NotFoundException($"League with id {match.LeagueId} was not found.");
 
         var result = _matchResultBuilder.Build(league.Sport, match, request);
+
+        if (match.Stage == MatchStage.RegularSeason)
+            _playoffService.HandleRegularSeasonResultChanged(match.LeagueId);
 
         match.SetResult(result);
         _matchRepository.SaveResult(match);

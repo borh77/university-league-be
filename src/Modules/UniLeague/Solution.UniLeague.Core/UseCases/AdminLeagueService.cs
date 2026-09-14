@@ -47,8 +47,16 @@ public class AdminLeagueService : IAdminLeagueService
 
     public List<AdminTeamDto> GetAllTeams()
     {
+        var sportsByTeam = _leagueRepository.GetSportsByTeam();
+
         return _teamRepository.GetAll()
-            .Select(t => new AdminTeamDto { Id = t.Id, Name = t.Name, LogoUrl = t.LogoUrl })
+            .Select(t => new AdminTeamDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+                LogoUrl = t.LogoUrl,
+                Sport = sportsByTeam.TryGetValue((int)t.Id, out var sport) ? sport.ToString() : null
+            })
             .ToList();
     }
 
