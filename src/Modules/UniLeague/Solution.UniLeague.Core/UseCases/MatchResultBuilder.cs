@@ -17,15 +17,21 @@ public class MatchResultBuilder : IMatchResultBuilder
     {
         return sport switch
         {
-            Sport.Basketball => MatchResult.CreateWithPlayerStats(
-                request.HomeScore, request.AwayScore,
-                ResolvePlayerStats(match, RequirePlayerStats(request, "basketball")),
-                quarters: RequireQuarters(request)),
+            Sport.Basketball => request.PlayerStats is { Count: > 0 }
+                ? MatchResult.CreateWithPlayerStats(
+                    request.HomeScore, request.AwayScore,
+                    ResolvePlayerStats(match, request.PlayerStats),
+                    quarters: RequireQuarters(request))
+                : MatchResult.CreateWithQuarters(
+                    request.HomeScore, request.AwayScore, RequireQuarters(request)),
 
-            Sport.Volleyball => MatchResult.CreateWithPlayerStats(
-                request.HomeScore, request.AwayScore,
-                ResolvePlayerStats(match, RequirePlayerStats(request, "volleyball")),
-                sets: RequireSets(request)),
+            Sport.Volleyball => request.PlayerStats is { Count: > 0 }
+                ? MatchResult.CreateWithPlayerStats(
+                    request.HomeScore, request.AwayScore,
+                    ResolvePlayerStats(match, request.PlayerStats),
+                    sets: RequireSets(request))
+                : MatchResult.CreateWithSets(
+                    request.HomeScore, request.AwayScore, RequireSets(request)),
 
             _ => request.Goals is { Count: > 0 }
                 ? MatchResult.CreateWithGoals(
@@ -34,13 +40,6 @@ public class MatchResultBuilder : IMatchResultBuilder
                         g.ScorerName, g.TeamName, g.IsHomeTeamGoal, g.Minute)))
                 : MatchResult.Create(request.HomeScore, request.AwayScore)
         };
-    }
-
-    private static List<PlayerStatInputDto> RequirePlayerStats(SubmitMatchResultDto request, string sport)
-    {
-        if (request.PlayerStats is not { Count: > 0 })
-            throw new ArgumentException($"Player stats are required for {sport} results.");
-        return request.PlayerStats;
     }
 
     private static List<QuarterScore> RequireQuarters(SubmitMatchResultDto request)
